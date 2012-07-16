@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import letter,alias,certmanager
+import letter,alias
 
 def process_letter(l):
-    sendercert_subject   = alias.get_certsubject(l.attributes['SENDER'],l.attributes['VIA'])
-    receivercert_subject = alias.get_certsubject(l.attributes['RECEIVER'],l.attributes['VIA'])
+    sender   = alias.get_cert(l.attributes['SENDER'],l.attributes['VIA'],True)
+    receiver = alias.get_cert(l.attributes['RECEIVER'],l.attributes['VIA'],False)
 
-    print sendercert_subject,'->',receivercert_subject
-    # 确定了发送者，接收者，检查对应证书情况
-    sendercert   = certmanager.find(sendercert_subject)
-    receivercert = certmanager.find(receivercert_subject)
+    if sender == False or receiver == False:
+        raise Exception("Cannot find sender or/and receiver's certificate.")
     
     #检查对称密钥是否存在，然后发出交换申请+密文，或者直接用对称密钥+密文
 
