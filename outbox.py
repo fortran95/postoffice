@@ -15,10 +15,13 @@ def process_letter(l):
 
     # XXX TEST
     print 'Test loading begin.'
+    sendertext = k.encrypt('Hello, world!')
+
     s2 = alias.get_cert(l.attributes['SENDER'],l.attributes['VIA'],False)
     r2 = alias.get_cert(l.attributes['RECEIVER'],l.attributes['VIA'],True)
     k2 = keys.keys()
     k = k2.load(nkf,s2,r2)
+    print k2.decrypt(sendertext)
     # XXX END OF TEST
     
     #检查对称密钥是否存在，然后发出交换申请+密文，或者直接用对称密钥+密文

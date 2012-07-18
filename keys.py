@@ -1,6 +1,9 @@
 #-*- coding:utf-8 -*-
 from xi.hashes import Hash
+from xi.ciphers import xipher
 import random,json,time
+
+# TODO All key managements migrate to database or shelve
 
 class keys(object):
     deprecated = False
@@ -36,7 +39,7 @@ class keys(object):
         self.deprecated = False
 
         key_sig_src     = "%s|%s|%s|%s" % (self.key_id,self.key_val.encode('hex'),self.key_expire,self.key_depr)
-        key_sig         = sender_cert.do_sign(key_sig_src,True) # XXX Should also sign expire time, deprecate time, key id.
+        key_sig         = sender_cert.do_sign(key_sig_src,True)
 
         keyinfo = {'Title':'Intermediate_Key','ID':self.key_id,'Data':key_enc,'Signature':key_sig,'Expire_Time':self.key_expire,'Deprecate_Time':self.key_depr}
 
@@ -58,7 +61,7 @@ class keys(object):
             key_depr   = keyinfo['Deprecate_Time']
             if not (key_expire > key_depr and key_expire > time.time() and key_depr > 0):
                 raise Exception("Key expired or has invalid time stamp.")
-            self.deprecated = (time.time() < key_depr)
+            self.deprecated = (time.time() > key_depr)
 
             # Accept and examine a key.
             if not (cert1.is_ours ^ cert2.is_ours):
@@ -68,6 +71,9 @@ class keys(object):
             else:
                 sender_cert,receiver_cert = cert2,cert1
             id1,id2 = sender_cert.get_id(),receiver_cert.get_id()
+
+            if self._calc_idbase([id1,id2]) != key_id[0:key_id.find('_')]:
+                raise Exception("Invalid key ID.")
 
             # Validate key signature.
             key_val     = receiver_cert.private_decrypt(key_enc)
@@ -80,8 +86,55 @@ class keys(object):
         except Exception,e:
             print "Failed loading an intermediate key: %s" % e
             return False
-    def encrypt(self,data):
+    def save_private(self):
+        pass
+    def load_private(self):
+        pass
+    def encrypt(self,data,raw=False):
         if self.deprecated:
             raise Exception("Deprecated keys can only be used for decrypting.")
+        x = xipher(self.key_val)
+        hmackey = Hash('whirlpool',self.key_val).digest()
+
+        ciphertext = x.encrypt(data)
+        hmacdata   = Hash('whirlpool',data).hmac(hmackey,True)
+
+        retinf = {
+            'Title':'Message',
+            'Data':ciphertext.encode('base64').replace('\n',''),
+            'HMAC':hmacdata.encode('base64').replace('\n',''),
+            'Key_ID':self.key_id
+            }
+        if not raw:
+            retinf = json.dumps(retinf)
+        return retinf
     def decrypt(self,data):
-        pass
+        try:
+            if type(data) == type(''):
+                data = json.loads(data)
+            data_title      = data['Title']
+            data_ciphertext = data['Data'].decode('base64')
+            data_HMAC       = data['HMAC'].decode('base64')
+            data_key_id     = data['Key_ID']
+
+            if data_title != 'Message':
+                raise Exception("This may not be a message.")
+            if data_key_id != self.key_id:
+                raise Exception("Given message not encrypted with this key.")
+
+            x = xipher(self.key_val)
+            hmackey = Hash('whirlpool',self.key_val).digest()
+            
+            try:
+                plaintext = x.decrypt(data_ciphertext)
+                check_hmac = Hash('whirlpool',data).hmac(hmackey,True)
+                if check_hmac != data_HMAC:
+                    print 'HMAC CHECK FAILURE.'
+                    raise Exception("")
+            except Exception,e:
+                raise Exception("Data corrupted - %s." % e)
+
+            return plaintext
+        except Exception,e:
+            print "Error decrypting with intermediate key: %s" % e
+            return False
