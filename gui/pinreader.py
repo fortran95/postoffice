@@ -18,7 +18,7 @@ def pinreader(checktwice=False,**argv):
 
     if 'message' in argv.keys():
         msglbl = Label(prompts,text='下面是本次请求的信息：')
-        msgbox = Text(prompts,height=8)
+        msgbox = Text(prompts,height=8,width=40)
         msgbox.insert(END,argv['message'])
         msgbox.config(state=DISABLED)
         msglbl.grid(row=prompts_rowindex,column=0)
@@ -77,9 +77,17 @@ def pinreader(checktwice=False,**argv):
         r.destroy()
     btnOK['command'] = okcommand
 
+    btnCancel = Button(text='取消')
+    def cancelcommand(r=root):
+        global ret
+        ret = None
+        r.destroy()
+    btnCancel['command'] = cancelcommand
+
     btnOK.grid(row=2,column=0)
-    prompts.grid(row=0,column=0,sticky=N+S+W+E)
-    passphrase_region.grid(row=1,column=0)
+    btnCancel.grid(row=2,column=1)
+    prompts.grid(row=0,column=0,columnspan=2,sticky=N+S+W+E)
+    passphrase_region.grid(row=1,column=0,columnspan=2)
 
     root.title('ξ系统 - 请求口令')
 

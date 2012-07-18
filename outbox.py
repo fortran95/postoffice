@@ -10,8 +10,16 @@ def process_letter(l):
         raise Exception("Cannot find sender or/and receiver's certificate.")
 
     k = keys.keys()
-    nkf = k.new(sender,receiver,True)
+    nkf = k.new(sender,receiver,432000,True)
     #print nkf
+
+    # XXX TEST
+    print 'Test loading begin.'
+    s2 = alias.get_cert(l.attributes['SENDER'],l.attributes['VIA'],False)
+    r2 = alias.get_cert(l.attributes['RECEIVER'],l.attributes['VIA'],True)
+    k2 = keys.keys()
+    k = k2.load(nkf,s2,r2)
+    # XXX END OF TEST
     
     #检查对称密钥是否存在，然后发出交换申请+密文，或者直接用对称密钥+密文
 
