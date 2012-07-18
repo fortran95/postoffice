@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# config/addressbook.txt µÄ½âÎöÆ÷
-# ÓÃÓÚÊä³ö£º´ÓÒ»¸öÓ¦ÓÃµÄÌØ¶¨ÕË»§½ÓÊÜĞÅÏ¢Ê±£¬²ÉÓÃµÄÖ¤Êé
-#           ÒÔ¼°Í¨¹ıÌØ¶¨Ó¦ÓÃÖ¸¶¨½ÓÊÜÕË»§Ê±£¬²ÉÓÃµÄÖ¤Êé
+# config/addressbook.txt çš„è§£æå™¨
+# ç”¨äºè¾“å‡ºï¼šä»ä¸€ä¸ªåº”ç”¨çš„ç‰¹å®šè´¦æˆ·æ¥å—ä¿¡æ¯æ—¶ï¼Œé‡‡ç”¨çš„è¯ä¹¦
+#           ä»¥åŠé€šè¿‡ç‰¹å®šåº”ç”¨æŒ‡å®šæ¥å—è´¦æˆ·æ—¶ï¼Œé‡‡ç”¨çš„è¯ä¹¦
 import ConfigParser,os,sys
 from gui import pinreader
 from xi import certificate
@@ -27,7 +27,7 @@ def get_certsubject(account,software,path='config/alias.cfg'):
         print "Error in get_certsubject: %s" % e
     return False
 
-# ±¾º¯Êı¿ÉÒÔ¸ù¾İÅäÖÃÎÄ¼ş·µ»ØÖ¤ÊéÊµÀı
+# æœ¬å‡½æ•°å¯ä»¥æ ¹æ®é…ç½®æ–‡ä»¶è¿”å›è¯ä¹¦å®ä¾‹
 def get_cert(account,software,secret=False,path='config/alias.cfg'):
     global BASEPATH
     secname = get_certsubject(account,software,path)
@@ -37,10 +37,16 @@ def get_cert(account,software,secret=False,path='config/alias.cfg'):
     try:
         cfg.read(path)
         ret = certificate.certificate()
+        def _pinreader(checktwice=False,p1='',p2='',s=secret,n=secname):
+            msg = 'éœ€è¦è§£å¯†ä»¥ä¸‹è¯ä¹¦çš„ç§æœ‰å­˜å‚¨ï¼š\n  %s' % n
+            if not secret:
+                warn = 'ç”±äºé…ç½®é”™è¯¯ï¼Œæœ¬æ¬¡è¯»å–æ— æ³•æ‰¾åˆ°å…¬å¼€è¯ä¹¦ï¼Œæ‰€ä»¥è¯•å›¾ä»ç§æœ‰å¯¼å…¥ã€‚\nè¯·ä¿®æ”¹é…ç½®ä»¥æ”¹æ­£æ­¤é—®é¢˜ã€‚'
+                return pinreader.pinreader(checktwice,message=msg,warning=warn)
+            return pinreader.pinreader(checktwice,message=msg)
         if secret:
             if cfg.has_option(secname,'Private'):
                 filepath = os.path.join(BASEPATH,cfg.get(secname,'Private'))
-                ret.load_private_text(filepath,pinreader.pinreader)
+                ret.load_private_text(filepath,_pinreader)
             else:
                 return False
         else:
@@ -50,7 +56,10 @@ def get_cert(account,software,secret=False,path='config/alias.cfg'):
 
             elif cfg.has_option(secname,'Private'):
                 filepath = os.path.join(BASEPATH,cfg.get(secname,'Private'))
-                ret.load_private_text(filepath,pinreader.pinreader)
+                transcert = certificate.certificate()
+                transcert.load_private_text(filepath,_pinreader)
+                pubtext = transcert.get_public_text()
+                ret.load_public_text(pubtext)
 
             else:
                 return False

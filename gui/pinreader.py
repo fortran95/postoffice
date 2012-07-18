@@ -5,14 +5,28 @@ ret = None
 def pinreader(checktwice=False,**argv):
     global ret
     root = Tk()
+    ret = None
 
     prompts = Frame(root)
+    prompts_rowindex = 0
+
     if 'warning' in argv.keys():
         warn = Label(prompts,text=argv['warning'],bd=5)
         warn['background'] = '#ffb'
-        warn.grid(row=0,column=0,sticky=N+S+W+E)
+        warn.grid(row=prompts_rowindex,column=0,sticky=N+S+W+E)
+        prompts_rowindex += 1
+
+    if 'message' in argv.keys():
+        msglbl = Label(prompts,text='下面是本次请求的信息：')
+        msgbox = Text(prompts,height=8)
+        msgbox.insert(END,argv['message'])
+        msgbox.config(state=DISABLED)
+        msglbl.grid(row=prompts_rowindex,column=0)
+        msgbox.grid(row=prompts_rowindex+1,column=0)
+        prompts_rowindex += 2
+
     prompt = Label(prompts,text='请您输入密码，以便继续操作。',bd=5)
-    prompt.grid(row=1,column=0)
+    prompt.grid(row=prompts_rowindex,column=0)
 
 
     passphrase_region = Frame(root)
@@ -60,7 +74,7 @@ def pinreader(checktwice=False,**argv):
                 b['text'] = old
                 b.update_idletasks()
                 return
-        r.quit()
+        r.destroy()
     btnOK['command'] = okcommand
 
     btnOK.grid(row=2,column=0)
@@ -72,6 +86,11 @@ def pinreader(checktwice=False,**argv):
     _utils.center_window(root)
     root.resizable(0,0)
     root.mainloop()
+
+    try:
+        root.quit()
+    except:
+        pass
 
     if ret == None:
         return False

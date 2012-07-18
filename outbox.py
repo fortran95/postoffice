@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import letter,alias
+import letter,alias,keys
 
 def process_letter(l):
     sender   = alias.get_cert(l.attributes['SENDER'],l.attributes['VIA'],True)
@@ -8,6 +8,10 @@ def process_letter(l):
 
     if sender == False or receiver == False:
         raise Exception("Cannot find sender or/and receiver's certificate.")
+
+    k = keys.keys()
+    nkf = k.new(sender,receiver,True)
+    #print nkf
     
     #检查对称密钥是否存在，然后发出交换申请+密文，或者直接用对称密钥+密文
 
