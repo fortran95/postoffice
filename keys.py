@@ -101,8 +101,8 @@ class keys(object):
 
         retinf = {
             'Title':'Message',
-            'Data':ciphertext.encode('base64').replace('\n',''),
-            'HMAC':hmacdata.encode('base64').replace('\n',''),
+            'Data':ciphertext.encode('base64'),
+            'HMAC':hmacdata.encode('base64'),
             'Key_ID':self.key_id
             }
         if not raw:
@@ -127,7 +127,7 @@ class keys(object):
             
             try:
                 plaintext = x.decrypt(data_ciphertext)
-                check_hmac = Hash('whirlpool',data).hmac(hmackey,True)
+                check_hmac = Hash('whirlpool',plaintext).hmac(hmackey,True)
                 if check_hmac != data_HMAC:
                     print 'HMAC CHECK FAILURE.'
                     raise Exception("")
