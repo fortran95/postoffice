@@ -27,10 +27,14 @@ def process_letter(l):
     trans = k.encrypt(l.body,False)
     outputbuffer.append(trans)
 
-    # Write output
-    print outputbuffer
+    return outputbuffer
 
 
 l = letter.letter()
 l.read('boxes/outgoing/queue/sample.letter')
-process_letter(l)
+try:
+    r = process_letter(l)
+    for i in r:
+        print i
+except:
+    pass
