@@ -10,7 +10,12 @@ def process_letter(l):
         raise Exception("Cannot find sender or/and receiver's certificate.")
 
     k = keys.keys()
-    nkf = k.new(sender,receiver,432000,True)
+    nkf = None
+    if not k.find_key(sender,receiver):
+        print '** Generate a new intermediate key.'
+        nkf = k.new(sender,receiver,432000,True)
+    else:
+        print '** Will use existing key.'
     #print nkf
 
     # XXX TEST
@@ -20,7 +25,8 @@ def process_letter(l):
     s2 = alias.get_cert(l.attributes['SENDER'],l.attributes['VIA'],False)
     r2 = alias.get_cert(l.attributes['RECEIVER'],l.attributes['VIA'],True)
     k2 = keys.keys()
-    k = k2.load(nkf,s2,r2)
+    if nkf != None:
+        k = k2.load(nkf,s2,r2)
     print k2.decrypt(sendertext)
     # XXX END OF TEST
     

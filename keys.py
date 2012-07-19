@@ -1,14 +1,18 @@
 #-*- coding:utf-8 -*-
 from xi.hashes import Hash
 from xi.ciphers import xipher
-import random,json,time
+import random,json,time,os,sys,shelve
 
 # TODO All key managements migrate to database or shelve
+BASEPATH = os.path.realpath(os.path.dirname(sys.argv[0]))
 
 class keys(object):
+    key_id,key_val,key_expire,key_depr = None,None,None,None
     deprecated = False
-    def __init__(self):
-        pass
+    def __init__(self,keypath='secrets/'):
+        global BASEPATH
+        keydb_path = os.path.join(BASEPATH,keypath,'interkeys.db')
+        self.keydb = shelve.open(keydb_path,writeback=True)
     def _calc_idbase(self,ids):
         ids.sort()
         sstr = "".join(ids)
@@ -42,6 +46,14 @@ class keys(object):
         key_sig         = sender_cert.do_sign(key_sig_src,True)
 
         keyinfo = {'Title':'Intermediate_Key','ID':self.key_id,'Data':key_enc,'Signature':key_sig,'Expire_Time':self.key_expire,'Deprecate_Time':self.key_depr}
+
+        # Save to db
+        self.keydb[self.key_id] = {
+            'key_expire':self.key_expire,
+            'key_depr':self.key_depr,
+            'key_val':self.key_val,
+            'activated':False,
+            }
 
         if not raw:
             return json.dumps(keyinfo)
@@ -82,14 +94,51 @@ class keys(object):
                 raise Exception("Signature check failed.")
             self.key_id,self.key_expire,self.key_depr,self.key_val = key_id,key_expire,key_depr,key_val
 
+            # Save to db
+            if not self.keydb.has_key(self.key_id):
+                self.keydb[self.key_id] = {
+                    'key_expire':self.key_expire,
+                    'key_depr':self.key_depr,
+                    'key_val':self.key_val,
+                    'activated':True,
+                    }
+
             return self.key_val
         except Exception,e:
             print "Failed loading an intermediate key: %s" % e
             return False
-    def save_private(self):
-        pass
-    def load_private(self):
-        pass
+    def load_db(self,keyid):
+        if not self.keydb.has_key(keyid):
+            return False
+        keyinfo = self.keydb[keyid]
+        if type(keyinfo) == type(''):
+            return False
+        else:
+            if keyinfo['key_expire'] < time.time():
+                self.keydb[keyid] = Hash('whirlpool',self.keydb[keyid]['key_val']).digest()
+                return False
+
+        self.key_id,self.key_expire,self.key_depr,self.key_val = keyid,keyinfo['key_expire'],keyinfo['key_depr'],keyinfo['key_val']
+        self.deprecated = (self.key_depr < time.time())
+
+        return True
+    def find_key(self,cert1,cert2):
+        # Find suitable key for given cert-pair.
+        # A success find will result in automatic load.
+        # This function will NOT guarentee that the loaded key is not deprecated.
+        idbase = self._calc_idbase([cert1.get_id(),cert2.get_id()]) + '_'
+        idbase_len = len(idbase)
+
+        newest_keyid = None
+        newest_depr = 0
+
+        for keyid in self.keydb:
+            if keyid[0:idbase_len] == idbase:
+                if self.keydb[keyid]['key_depr'] > newest_depr:
+                    newest_keyid = keyid
+                    newest_depr = self.keydb[keyid]['key_depr']
+
+        return self.load_db(newest_keyid)
     def encrypt(self,data,raw=False):
         if self.deprecated:
             raise Exception("Deprecated keys can only be used for decrypting.")
@@ -115,13 +164,15 @@ class keys(object):
             data_title      = data['Title']
             data_ciphertext = data['Data'].decode('base64')
             data_HMAC       = data['HMAC'].decode('base64')
-            data_key_id     = data['Key_ID']
-
+            data_key_id     = str(data['Key_ID'])
+            
             if data_title != 'Message':
                 raise Exception("This may not be a message.")
-            if data_key_id != self.key_id:
-                raise Exception("Given message not encrypted with this key.")
 
+            if data_key_id != self.key_id:
+                if not self.load_db(data_key_id):
+                    raise Exception("Given message not encrypted with this key.")
+            
             x = xipher(self.key_val)
             hmackey = Hash('whirlpool',self.key_val).digest()
             
@@ -133,7 +184,9 @@ class keys(object):
                     raise Exception("")
             except Exception,e:
                 raise Exception("Data corrupted - %s." % e)
-
+            
+            self.keydb[self.key_id]['activated'] = True
+            
             return plaintext
         except Exception,e:
             print "Error decrypting with intermediate key: %s" % e
