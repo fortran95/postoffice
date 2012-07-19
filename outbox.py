@@ -3,34 +3,33 @@
 import letter,alias,keys
 
 def process_letter(l):
-    sender   = alias.get_cert(l.attributes['SENDER'],l.attributes['VIA'],True)
-    receiver = alias.get_cert(l.attributes['RECEIVER'],l.attributes['VIA'],False)
+    sender_pub = alias.get_cert(l.attributes['SENDER'],l.attributes['VIA'],False)
+    receiver   = alias.get_cert(l.attributes['RECEIVER'],l.attributes['VIA'],False)
 
-    if sender == False or receiver == False:
+    if sender_pub == False or receiver == False:
         raise Exception("Cannot find sender or/and receiver's certificate.")
 
+    outputbuffer = []
+
     k = keys.keys()
-    nkf = None
-    if not k.find_key(sender,receiver):
-        print '** Generate a new intermediate key.'
-        nkf = k.new(sender,receiver,432000,True)
-    else:
-        print '** Will use existing key.'
-    #print nkf
+    do_gen = False
+    if not k.find_key(sender_pub,receiver):
+        do_gen = True
+    elif k.deprecated:
+        do_gen = True
+    if do_gen:
+        sender_prv = alias.get_cert(l.attributes['SENDER'],l.attributes['VIA'],True)
+        if sender_prv == False:
+            raise Exception("Cannot find sender's private certificate.")
+        newkeystr = k.new(sender_prv,receiver,432000,False)
+        outputbuffer.append(newkeystr)
 
-    # XXX TEST
-    print 'Test loading begin.'
-    sendertext = k.encrypt('Hello, world!')
+    trans = k.encrypt(l.body,False)
+    outputbuffer.append(trans)
 
-    s2 = alias.get_cert(l.attributes['SENDER'],l.attributes['VIA'],False)
-    r2 = alias.get_cert(l.attributes['RECEIVER'],l.attributes['VIA'],True)
-    k2 = keys.keys()
-    if nkf != None:
-        k = k2.load(nkf,s2,r2)
-    print k2.decrypt(sendertext)
-    # XXX END OF TEST
-    
-    #检查对称密钥是否存在，然后发出交换申请+密文，或者直接用对称密钥+密文
+    # Write output
+    print outputbuffer
+
 
 l = letter.letter()
 l.read('boxes/outgoing/queue/sample.letter')

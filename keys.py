@@ -38,21 +38,32 @@ class keys(object):
         self.key_id     = self._calc_idbase([id1,id2]) + '_' + self._new_value(16).encode('hex')
         key_enc         = receiver_cert.public_encrypt(self.key_val,True)
 
-        self.key_expire = int(time.time() + life)
-        self.key_depr   = int(time.time() + life * 0.8)
+        nowtime = time.time()
+        self.key_expire = int(nowtime + life)
+        self.key_depr   = int(nowtime + life * 0.8)
+        self.key_fresh  = int(nowtime + life * 0.1)
         self.deprecated = False
 
-        key_sig_src     = "%s|%s|%s|%s" % (self.key_id,self.key_val.encode('hex'),self.key_expire,self.key_depr)
+        key_sig_src     = "%s|%s|%s|%s|%s" % (self.key_id,self.key_val.encode('hex'),self.key_expire,self.key_depr,self.key_fresh)
         key_sig         = sender_cert.do_sign(key_sig_src,True)
 
-        keyinfo = {'Title':'Intermediate_Key','ID':self.key_id,'Data':key_enc,'Signature':key_sig,'Expire_Time':self.key_expire,'Deprecate_Time':self.key_depr}
+        keyinfo = {
+            'Title'         :'Intermediate_Key',
+            'ID'            :self.key_id,
+            'Data'          :key_enc,
+            'Signature'     :key_sig,
+            'Expire_Time'   :self.key_expire,
+            'Deprecate_Time':self.key_depr,
+            'Fresh_Time'    :self.key_fresh,
+            }
 
         # Save to db
         self.keydb[self.key_id] = {
-            'key_expire':self.key_expire,
-            'key_depr':self.key_depr,
-            'key_val':self.key_val,
-            'activated':False,
+            'key_expire'    :self.key_expire,
+            'key_depr'      :self.key_depr,
+            'key_fresh'     :self.key_fresh,
+            'key_val'       :self.key_val,
+            'activated'     :False,
             }
 
         if not raw:
@@ -71,7 +82,8 @@ class keys(object):
             key_sig    = keyinfo['Signature']
             key_expire = keyinfo['Expire_Time']
             key_depr   = keyinfo['Deprecate_Time']
-            if not (key_expire > key_depr and key_expire > time.time() and key_depr > 0):
+            key_fresh  = keyinfo['Fresh_Time']
+            if not (key_expire > key_depr and key_expire > time.time() and key_depr > 0 and key_fresh > 0 and key_fresh <= key_depr):
                 raise Exception("Key expired or has invalid time stamp.")
             self.deprecated = (time.time() > key_depr)
 
@@ -89,43 +101,49 @@ class keys(object):
 
             # Validate key signature.
             key_val     = receiver_cert.private_decrypt(key_enc)
-            key_sig_src = "%s|%s|%s|%s" % (key_id,key_val.encode('hex'),key_expire,key_depr)
+            key_sig_src = "%s|%s|%s|%s|%s" % (key_id,key_val.encode('hex'),key_expire,key_depr,key_fresh)
             if not sender_cert.verify_sign(key_sig_src,key_sig):
                 raise Exception("Signature check failed.")
-            self.key_id,self.key_expire,self.key_depr,self.key_val = key_id,key_expire,key_depr,key_val
+            self.key_id,self.key_expire,self.key_depr,self.key_fresh,self.key_val = key_id,key_expire,key_depr,key_fresh,key_val
 
             # Save to db
             if not self.keydb.has_key(self.key_id):
                 self.keydb[self.key_id] = {
-                    'key_expire':self.key_expire,
-                    'key_depr':self.key_depr,
-                    'key_val':self.key_val,
-                    'activated':True,
+                    'key_expire'    :self.key_expire,
+                    'key_depr'      :self.key_depr,
+                    'key_fresh'     :self.key_fresh,
+                    'key_val'       :self.key_val,
+                    'activated'     :True,
                     }
 
             return self.key_val
         except Exception,e:
             print "Failed loading an intermediate key: %s" % e
             return False
+    def refresh_db(self):# Remove expired keys in database.
+        for keyid in self.keydb:
+            if type(self.keydb[keyid]) != str:
+                if self.keydb[keyid]['key_expire'] < time.time():
+                    self.keydb[keyid] = Hash('whirlpool',self.keydb[keyid]['key_val']).digest()
     def load_db(self,keyid):
         if not self.keydb.has_key(keyid):
             return False
+        self.refresh_db()
+
         keyinfo = self.keydb[keyid]
         if type(keyinfo) == type(''):
             return False
-        else:
-            if keyinfo['key_expire'] < time.time():
-                self.keydb[keyid] = Hash('whirlpool',self.keydb[keyid]['key_val']).digest()
-                return False
 
-        self.key_id,self.key_expire,self.key_depr,self.key_val = keyid,keyinfo['key_expire'],keyinfo['key_depr'],keyinfo['key_val']
-        self.deprecated = (self.key_depr < time.time())
+        self.key_id = keyid
+        self.key_expire,self.key_depr,self.key_fresh,self.key_val = keyinfo['key_expire'],keyinfo['key_depr'],keyinfo['key_fresh'],keyinfo['key_val']
+        self.deprecated = (self.key_depr < time.time()) or (keyinfo['activated'] == False and time.time() > self.key_fresh)
 
         return True
     def find_key(self,cert1,cert2):
         # Find suitable key for given cert-pair.
         # A success find will result in automatic load.
         # This function will NOT guarentee that the loaded key is not deprecated.
+        self.refresh_db()
         idbase = self._calc_idbase([cert1.get_id(),cert2.get_id()]) + '_'
         idbase_len = len(idbase)
 
@@ -133,6 +151,8 @@ class keys(object):
         newest_depr = 0
 
         for keyid in self.keydb:
+            if type(self.keydb[keyid]) == str:
+                continue
             if keyid[0:idbase_len] == idbase:
                 if self.keydb[keyid]['key_depr'] > newest_depr:
                     newest_keyid = keyid
