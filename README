@@ -42,3 +42,22 @@ POSTOFFICE 是针对各种通讯应用程序而设计的。任何一个应用程
 在接收时，同样地，应用程序将收到的信息放入boxes/incoming/queue/下，同上指定
 文件头。执行 python inbox.py ，应用程序读取 boxes/incoming/handled/下的信息
 显示给用户。
+
+配置文件
+--------
+config/alias.cfg
+    配置一个用户的信息。段落名（Section Name）是用户的标识，在提示输入密码等
+场合会用到。Public键指定公钥证书，Private键（可选）指定私人证书。
+    之后需要配置应用名称和账户。例如一个典型的配置文件如下：
+
+    [person1]
+    Public: certificates/public/person1.pub
+    Private:certificates/secret/person1
+    Email=person1@somewhere.com
+    QQ=000000000
+    [person2]
+    Public: certificates/public/person2.pub
+    Email=person2@somewhere.com
+
+    在输入系统的信件中指定了VIA后，将根据SENDER和RECEIVER的值在配置文件中寻
+找对应人选，继而寻找证书。
