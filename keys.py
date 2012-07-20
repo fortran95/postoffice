@@ -3,7 +3,6 @@ from xi.hashes import Hash
 from xi.ciphers import xipher
 import random,json,time,os,sys,shelve
 
-# TODO All key managements migrate to database or shelve
 BASEPATH = os.path.realpath(os.path.dirname(sys.argv[0]))
 
 class keys(object):
@@ -90,7 +89,7 @@ class keys(object):
             # Accept and examine a key.
             if not (cert1.is_ours ^ cert2.is_ours):
                 raise Exception("Symkey generator must have two certificates: one private and one public.")
-            if not cert1.is_ours:
+            if cert2.is_ours:
                 sender_cert,receiver_cert = cert1,cert2
             else:
                 sender_cert,receiver_cert = cert2,cert1
@@ -191,7 +190,7 @@ class keys(object):
 
             if data_key_id != self.key_id:
                 if not self.load_db(data_key_id):
-                    raise Exception("Given message not encrypted with this key.")
+                    raise Exception("The very key used to decrypt this does not exists or has expired.")
             
             x = xipher(self.key_val)
             hmackey = Hash('whirlpool',self.key_val).digest()
