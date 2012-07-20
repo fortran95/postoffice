@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import letter,alias,keys
-import os,shutil,sys
+import os,shutil,sys,json
 from _util import uniqid,splitjsons
 
 # Process incoming(encrypted) letters.
@@ -21,7 +21,8 @@ def process_letter(l):
     for j in jsons:
         try:
             jp = json.loads(j)
-        except:
+        except Exception,e:
+            print 'Error decoding json: %s' % e
             continue
         try:
             if   jp['Title'] == 'Intermediate_Key':
@@ -66,3 +67,4 @@ for filename in queued:
         # Move to failed
         shutil.copy(filepath,os.path.join(PATH_error,filename))
 
+#os.remove(filepath)

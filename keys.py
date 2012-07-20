@@ -76,7 +76,7 @@ class keys(object):
 
             if keyinfo['Title'] != 'Intermediate_Key':
                 raise Exception("This may not be an intermediate key.")
-            key_id     = keyinfo['ID']
+            key_id     = str(keyinfo['ID'])
             key_enc    = keyinfo['Data']
             key_sig    = keyinfo['Signature']
             key_expire = keyinfo['Expire_Time']
