@@ -47,7 +47,7 @@ for filename in queued:
         r = process_letter(l)
         
         ret = letter.letter()
-        ret.attributes = {'TAG':l.attributes['TAG']}
+        ret.attributes = {'TAG':l.attributes['TAG'],'SENDER':l.attributes['SENDER'],'RECEIVER':l.attributes['RECEIVER'],'VIA':l.attributes['VIA']}
 
         for i in r:
             ret.body += i + '\n\r'
@@ -56,7 +56,7 @@ for filename in queued:
         ret.write(outputfilename)
         print "Handled a letter."
     except Exception,e:
-        print "Error while rocessing outgoing letter(s): %s" % e
+        print "Error while processing outgoing letter(s): %s" % e
         # Move to failed
         shutil.copy(filepath,os.path.join(PATH_error,filename))
     os.remove(filepath)

@@ -54,7 +54,7 @@ for filename in queued:
         r = process_letter(l)
         
         ret = letter.letter()
-        ret.attributes = {'TAG':l.attributes['TAG']}
+        ret.attributes = {'TAG':l.attributes['TAG'],'VIA':l.attributes['VIA'],'SENDER':l.attributes['SENDER'],'RECEIVER':l.attributes['RECEIVER']}
 
         for i in r:
             ret.body += i + '\n\r'
@@ -66,5 +66,4 @@ for filename in queued:
         print "Error while rocessing incoming letter(s): %s" % e
         # Move to failed
         shutil.copy(filepath,os.path.join(PATH_error,filename))
-
-#os.remove(filepath)
+    os.remove(filepath)
