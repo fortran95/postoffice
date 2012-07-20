@@ -1,0 +1,28 @@
+POSTOFFICE：NERV ξ 计划的应用程序
+=================================
+POSTOFFICE是利用 ξ 计划作为核心，进行具有OTR性质的保密信息交换服务程序。
+
+目录结构
+--------
+postoffice/
+    boxes/
+        incoming/
+            queue/
+            error/
+            handled/
+        outgoing/
+            queue/
+            error/
+            handled
+    certificates/
+    config/
+    gui/
+    secrets/
+    xi/ -> 连接到xi模块（源码在 http://github.com/fortran95/xi）
+
+使用说明
+--------
+POSTOFFICE 是针对各种通讯应用程序而设计的。任何一个应用程序，如果需要使用本
+服务，只需：
+    1. 在boxes/outgoing/queue/ 下新建文件，文件名任意，内容遵循如下规则：
+        a. 
