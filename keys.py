@@ -165,7 +165,7 @@ class keys(object):
         hmackey = Hash('whirlpool',self.key_val).digest()
 
         ciphertext = x.encrypt(data)
-        hmacdata   = Hash('whirlpool',data).hmac(hmackey,True)
+        hmacdata   = Hash('whirlpool',ciphertext).hmac(hmackey,True)
 
         retinf = {
             'Title':'Message',
@@ -194,13 +194,14 @@ class keys(object):
             
             x = xipher(self.key_val)
             hmackey = Hash('whirlpool',self.key_val).digest()
+            check_hmac = Hash('whirlpool',data_ciphertext).hmac(hmackey,True)
+            if check_hmac != data_HMAC:
+                print 'HMAC CHECK FAILURE.'
+                raise Exception("")
+
             
             try:
                 plaintext = x.decrypt(data_ciphertext)
-                check_hmac = Hash('whirlpool',plaintext).hmac(hmackey,True)
-                if check_hmac != data_HMAC:
-                    print 'HMAC CHECK FAILURE.'
-                    raise Exception("")
             except Exception,e:
                 raise Exception("Data corrupted - %s." % e)
             
