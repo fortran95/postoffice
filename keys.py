@@ -199,7 +199,6 @@ class keys(object):
                 print 'HMAC CHECK FAILURE.'
                 raise Exception("")
 
-            
             try:
                 plaintext = x.decrypt(data_ciphertext)
             except Exception,e:
