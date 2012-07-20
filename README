@@ -18,7 +18,7 @@ postoffice/
     config/
     gui/
     secrets/
-    xi/ -> 连接到xi模块（源码在 http://github.com/fortran95/xi）
+    xi/ -> 连接到xi模块（ 源码在 http://github.com/fortran95/xi ）
 
 使用说明
 --------
