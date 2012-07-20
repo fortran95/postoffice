@@ -6,9 +6,16 @@ class letter(object):
     
     attributes = {}
     items = ('SENDER','VIA','TAG','RECEIVER','ATTRIBUTES')
+    body = ''
 
     def __init__(self):
         pass
+    def _validate_value(self,text):
+        validchars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_@.:;-+='
+        for c in text:
+            if not c in validchars:
+                return False
+        return True
     def read(self,filename):
         try:
             
@@ -29,6 +36,8 @@ class letter(object):
                 prefix = l[0:l.index(' ')].strip().upper()
                 if prefix in self.items:
                     value  = l[l.index(' ') + 1:].strip()
+                    if not self._validate_value(value):
+                        raise Exception("Invalid attribute value of this letter.")
                     self.attributes[prefix] = value
 
             # 读取 ATTRIBUTES 给出的消息编码设置，解读消息
@@ -52,6 +61,8 @@ class letter(object):
                 value = self.attributes[attr]
                 attr  = attr.upper()
                 if attr in self.items:
+                    if not self._validate_value(value):
+                        raise Exception("Invalid attribute value of this letter.")
                     body += '%16s %s\n' % (attr,value)
             body += '\n'
             

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import letter,alias,keys
+import os,shutil,sys
+from _util import uniqid
 
 def process_letter(l):
     sender_pub = alias.get_cert(l.attributes['SENDER'],l.attributes['VIA'],False)
@@ -29,12 +31,32 @@ def process_letter(l):
 
     return outputbuffer
 
+BASEPATH = os.path.realpath(os.path.dirname(sys.argv[0]))
+BASEPATH = os.path.join(BASEPATH,'boxes','outgoing')
 
-l = letter.letter()
-l.read('boxes/outgoing/queue/sample.letter')
-try:
-    r = process_letter(l)
-    for i in r:
-        print i
-except:
-    pass
+PATH_queue   = os.path.join(BASEPATH,'queue')
+PATH_error   = os.path.join(BASEPATH,'error')
+PATH_handled = os.path.join(BASEPATH,'handled')
+
+queued = os.listdir(PATH_queue)
+for filename in queued:
+    try:
+        filepath = os.path.join(PATH_queue,filename)
+        l = letter.letter()
+        l.read(os.path.join(filepath))
+        r = process_letter(l)
+        
+        ret = letter.letter()
+        ret.attributes = {'TAG':l.attributes['TAG']}
+
+        for i in r:
+            ret.body += i + '\n\r'
+
+        outputfilename = os.path.join(PATH_handled,l.attributes['VIA'] + '.' + uniqid())
+        ret.write(outputfilename)
+        print "Handled a letter."
+    except Exception,e:
+        print "Error while rocessing outgoing letter(s): %s" % e
+        # Move to failed
+        shutil.copy(filepath,os.path.join(PATH_error,filename))
+    os.remove(filepath)
