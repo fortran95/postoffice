@@ -32,7 +32,15 @@ POSTOFFICE 是针对各种通讯应用程序而设计的。任何一个应用程
             RECEIVER recv@somemail.com
             VIA Email
             TAG 1
-        b）每行之间用\n分隔。文件头后用两个\n，之后是明文
+        b）每行之间用\n分隔。文件头后用两个\n，之后是明文，完整例子如：
+            SENDER send@somemail.com
+            RECEIVER recv@somemail.com
+            VIA Email
+            TAG 1
+
+            Hello, world!
+            This is the test letter.
+            The end.
         c）允许用ATTRIBUTES关键字指定Base64属性，这样明文将被POSTOFFICE认为
         是Base64编码过的
     2. 执行 python outbox.py，这样将使程序处理上述路径下的文件
@@ -41,7 +49,7 @@ POSTOFFICE 是针对各种通讯应用程序而设计的。任何一个应用程
 
 在接收时，同样地，应用程序将收到的信息放入boxes/incoming/queue/下，同上指定
 文件头。执行 python inbox.py ，应用程序读取 boxes/incoming/handled/下的信息
-显示给用户。
+显示给用户。输出结果类似于上述例子。
 
 配置文件
 --------
@@ -60,4 +68,25 @@ config/alias.cfg
     Email=person2@somewhere.com
 
     在输入系统的信件中指定了VIA后，将根据SENDER和RECEIVER的值在配置文件中寻
-找对应人选，继而寻找证书。
+找对应人选，继而寻找证书。例如给定如下信件：
+
+    SENDER person1@somewhere.com
+    RECEIVER person2@somewhere.com
+    VIA Email
+    TAG 000102030405060708090A0B0C0D0E0F
+
+    This is an example email.
+
+    则程序将以 person1 为发送人，person2 为接收人，传送上述信息。
+
+错误处理
+--------
+    在程序执行中出现任何错误，都将导致信件被移动到相应信箱目录（boxes/
+incoming 或 boxes/outgoing）下的 error/ 目录中。同时会报告错误。
+
+版权
+----
+    本程序根据 GPL 发布。您可以自由地使用、分发程序或程序的部分源码，前提是
+您必须与此同时使您的程序也遵循 GPL 协议。作者不保证程序或程序的任何部分适合
+您的需求，也不保证它们的正确性。因为使用本程序的源码导致的任何损失与作者无
+关。
