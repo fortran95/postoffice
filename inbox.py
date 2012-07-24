@@ -63,7 +63,7 @@ for filename in queued:
         ret.write(outputfilename)
         print "Handled a letter."
     except Exception,e:
-        print "Error while rocessing incoming letter(s): %s" % e
+        print "Error while processing incoming letter(s): %s" % e
         # Move to failed
         shutil.copy(filepath,os.path.join(PATH_error,filename))
     os.remove(filepath)
