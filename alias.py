@@ -10,8 +10,10 @@ from xi import certificate
 BASEPATH = os.path.realpath(os.path.dirname(sys.argv[0]))
 
 def get_certsubject(account,software,path='config/alias.cfg'):
+    global BASEPATH
     cfg = ConfigParser.ConfigParser()
     try:
+        path = os.path.join(BASEPATH,path)
         cfg.read(path)
         software = software.lower()
         for sec in cfg.sections():
@@ -35,6 +37,7 @@ def get_cert(account,software,secret=False,path='config/alias.cfg'):
         return False
     cfg = ConfigParser.ConfigParser()
     try:
+        path = os.path.join(BASEPATH,path)
         cfg.read(path)
         ret = certificate.certificate()
         def _pinreader(checktwice=False,p1='',p2='',s=secret,n=secname):
