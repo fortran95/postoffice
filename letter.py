@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Ìá¹©Ò»¸öÀà£¬ÓÃÓÚ½âÎö»ò²úÉúÓëÉÏ²ãÓ¦ÓÃ½»»»µÄÐÅÏ¢
+# æä¾›ä¸€ä¸ªç±»ï¼Œç”¨äºŽè§£æžæˆ–äº§ç”Ÿä¸Žä¸Šå±‚åº”ç”¨äº¤æ¢çš„ä¿¡æ¯
 
 class letter(object):
     
@@ -19,9 +19,9 @@ class letter(object):
     def read(self,filename):
         try:
             
-            # ½ÓÊÕÕßºÍÓ¦ÓÃÃû³Æ£¨Õâ½«¾ö¶¨Ö¤ÊéÐÅÏ¢£¬µ«±¾Àà²»¹Ü£©
-            # Ó¦ÓÃ±êÊ¶£¨²»¹Ü£©
-            # ·¢ËÍÕß£¨ºÍÓ¦ÓÃÃû³Æ£©
+            # æŽ¥æ”¶è€…å’Œåº”ç”¨åç§°ï¼ˆè¿™å°†å†³å®šè¯ä¹¦ä¿¡æ¯ï¼Œä½†æœ¬ç±»ä¸ç®¡ï¼‰
+            # åº”ç”¨æ ‡è¯†ï¼ˆä¸ç®¡ï¼‰
+            # å‘é€è€…ï¼ˆå’Œåº”ç”¨åç§°ï¼‰
             
             f = open(filename,'r').readlines()
 
@@ -40,7 +40,7 @@ class letter(object):
                         raise Exception("Invalid attribute value of this letter.")
                     self.attributes[prefix] = value
 
-            # ¶ÁÈ¡ ATTRIBUTES ¸ø³öµÄÏûÏ¢±àÂëÉèÖÃ£¬½â¶ÁÏûÏ¢
+            # è¯»å– ATTRIBUTES ç»™å‡ºçš„æ¶ˆæ¯ç¼–ç è®¾ç½®ï¼Œè§£è¯»æ¶ˆæ¯
             if self.attributes.has_key('ATTRIBUTES'):
                 attrs = self.attributes['ATTRIBUTES'].lower().split(';')
                 if 'base64' in attrs:
@@ -56,7 +56,7 @@ class letter(object):
             
             body = ''
 
-            # ¸ù¾ÝbodyºÍattributesµÄÉèÖÃ£¬Ð´ÈëÎÄ¼þ
+            # æ ¹æ®bodyå’Œattributesçš„è®¾ç½®ï¼Œå†™å…¥æ–‡ä»¶
             for attr in self.attributes:
                 value = self.attributes[attr]
                 attr  = attr.upper()
@@ -66,7 +66,7 @@ class letter(object):
                     body += '%16s %s\n' % (attr,value)
             body += '\n'
             
-            # ¸ù¾Ýattributes×ö³ö´¦Àí
+            # æ ¹æ®attributesåšå‡ºå¤„ç†
             t = self.body[:]
             if self.attributes.has_key('ATTRIBUTES'):
                 attrs = self.attributes['ATTRIBUTES'].lower().split(';')
