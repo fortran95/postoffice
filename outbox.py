@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import letter,alias,keys
+import letter,alias,keys,packager
 import os,shutil,sys
 from _util import uniqid
 
@@ -26,7 +26,7 @@ def process_letter(l):
         newkeystr = k.new(sender_prv,receiver,432000,False)
         outputbuffer.append(newkeystr)
 
-    trans = k.encrypt(l.body,False)
+    trans = k.encrypt(packager.package(l.body),False)
     outputbuffer.append(trans)
 
     return outputbuffer

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import letter,alias,keys
+import letter,alias,keys,packager
 import os,shutil,sys,json
 from _util import uniqid,splitjsons
 
@@ -32,7 +32,7 @@ def process_letter(l):
                         raise Exception("Cannot find receiver's private certificate.")
                 k.load(jp,sender,receiver_prv)
             elif jp['Title'] == 'Message':
-                outputbuffer.append(k.decrypt(jp))
+                outputbuffer.append(packager.depackage(k.decrypt(jp)))
         except Exception,e:
             raise Exception("%s" % e)
 

@@ -15,7 +15,9 @@ def splitjsons(text):
             unbalance -= 1
         i += 1
         if unbalance == 0:
-            ret.append(text[0:i])
+            got = text[0:i]
+            if got[0] in starts and got[-1] in ends:
+                ret.append(got)
             text = text[i:].strip()
             i = 0
     return ret
