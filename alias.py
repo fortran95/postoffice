@@ -8,8 +8,9 @@ from gui import pinreader
 from xi import certificate
 
 BASEPATH = os.path.realpath(os.path.dirname(sys.argv[0]))
+defaultpath = os.path.join('config','alias.cfg')
 
-def get_certsubject(account,software,path='config/alias.cfg'):
+def get_certsubject(account,software,path=defaultpath):
     global BASEPATH
     cfg = ConfigParser.ConfigParser()
     try:
@@ -30,7 +31,7 @@ def get_certsubject(account,software,path='config/alias.cfg'):
     return False
 
 # 本函数可以根据配置文件返回证书实例
-def get_cert(account,software,secret=False,path='config/alias.cfg'):
+def get_cert(account,software,secret=False,path=defaultpath):
     global BASEPATH
     secname = get_certsubject(account,software,path)
     if secname == False:

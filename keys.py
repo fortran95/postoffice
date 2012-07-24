@@ -9,7 +9,7 @@ class keys(object):
     key_id,key_val,key_expire,key_depr = None,None,None,None
     deprecated,activated = False,False
     exchange_info = ''
-    def __init__(self,keypath='secrets/'):
+    def __init__(self,keypath='secrets'):
         global BASEPATH
         keydb_path = os.path.join(BASEPATH,keypath,'interkeys.db')
         self.keydb = shelve.open(keydb_path,writeback=True)
