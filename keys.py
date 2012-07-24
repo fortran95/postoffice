@@ -7,7 +7,8 @@ BASEPATH = os.path.realpath(os.path.dirname(sys.argv[0]))
 
 class keys(object):
     key_id,key_val,key_expire,key_depr = None,None,None,None
-    deprecated = False
+    deprecated,activated = False,False
+    exchange_info = ''
     def __init__(self,keypath='secrets/'):
         global BASEPATH
         keydb_path = os.path.join(BASEPATH,keypath,'interkeys.db')
@@ -42,6 +43,7 @@ class keys(object):
         self.key_depr   = int(nowtime + life * 0.8)
         self.key_fresh  = int(nowtime + life * 0.1)
         self.deprecated = False
+        self.activated  = False
 
         key_sig_src     = "%s|%s|%s|%s|%s" % (self.key_id,self.key_val.encode('hex'),self.key_expire,self.key_depr,self.key_fresh)
         key_sig         = sender_cert.do_sign(key_sig_src,True)
@@ -62,6 +64,7 @@ class keys(object):
             'key_depr'      :self.key_depr,
             'key_fresh'     :self.key_fresh,
             'key_val'       :self.key_val,
+            'exchange_info' :keyinfo,
             'activated'     :False,
             }
 
@@ -82,6 +85,7 @@ class keys(object):
             key_expire = keyinfo['Expire_Time']
             key_depr   = keyinfo['Deprecate_Time']
             key_fresh  = keyinfo['Fresh_Time']
+            
             if not (key_expire > key_depr and key_expire > time.time() and key_depr > 0 and key_fresh > 0 and key_fresh <= key_depr):
                 raise Exception("Key expired or has invalid time stamp.")
             self.deprecated = (time.time() > key_depr)
@@ -104,6 +108,7 @@ class keys(object):
             if not sender_cert.verify_sign(key_sig_src,key_sig):
                 raise Exception("Signature check failed.")
             self.key_id,self.key_expire,self.key_depr,self.key_fresh,self.key_val = key_id,key_expire,key_depr,key_fresh,key_val
+            self.activated = True
 
             # Save to db
             if not self.keydb.has_key(self.key_id):
@@ -125,6 +130,7 @@ class keys(object):
                 if self.keydb[keyid]['key_expire'] < time.time():
                     self.keydb[keyid] = Hash('whirlpool',self.keydb[keyid]['key_val']).digest()
     def load_db(self,keyid):
+
         if not self.keydb.has_key(keyid):
             return False
         self.refresh_db()
@@ -132,10 +138,16 @@ class keys(object):
         keyinfo = self.keydb[keyid]
         if type(keyinfo) == type(''):
             return False
-
+        
         self.key_id = keyid
         self.key_expire,self.key_depr,self.key_fresh,self.key_val = keyinfo['key_expire'],keyinfo['key_depr'],keyinfo['key_fresh'],keyinfo['key_val']
+        
+        if keyinfo.has_key('exchange_info'):
+            self.exchange_info = keyinfo['exchange_info']
+        else:
+            self.exchange_info = ''
         self.deprecated = (self.key_depr < time.time()) or (keyinfo['activated'] == False and time.time() > self.key_fresh)
+        self.activated  = keyinfo['activated']
 
         return True
     def find_key(self,cert1,cert2):

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import letter,alias,keys,packager
-import os,shutil,sys
+import os,shutil,sys,json
 from _util import uniqid
 
 def process_letter(l):
@@ -15,16 +15,20 @@ def process_letter(l):
 
     k = keys.keys()
     do_gen = False
+
     if not k.find_key(sender_pub,receiver):
         do_gen = True
     elif k.deprecated:
         do_gen = True
     if do_gen:
+
         sender_prv = alias.get_cert(l.attributes['SENDER'],l.attributes['VIA'],True)
         if sender_prv == False:
             raise Exception("Cannot find sender's private certificate.")
         newkeystr = k.new(sender_prv,receiver,432000,False)
         outputbuffer.append(newkeystr)
+    elif k.activated == False and k.deprecated == False and k.exchange_info != '': # Try Key Exchange
+        outputbuffer.append(json.dumps(k.exchange_info))
 
     trans = k.encrypt(packager.package(l.body),False)
     outputbuffer.append(trans)
