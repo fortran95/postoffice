@@ -13,6 +13,8 @@ class keys(object):
         global BASEPATH
         keydb_path = os.path.join(BASEPATH,keypath,'interkeys.db')
         self.keydb = shelve.open(keydb_path,writeback=True)
+    def derive_hmackey(self,key):
+        return Hash('sha1',Hash('whirlpool',key).digest()).digest()
     def _calc_idbase(self,ids):
         ids.sort()
         sstr = "".join(ids)
@@ -128,7 +130,7 @@ class keys(object):
         for keyid in self.keydb:
             if type(self.keydb[keyid]) != str:
                 if self.keydb[keyid]['key_expire'] < time.time():
-                    self.keydb[keyid] = Hash('whirlpool',self.keydb[keyid]['key_val']).digest()
+                    self.keydb[keyid] = self.derive_hmackey(self.keydb[keyid]['key_val'])
     def load_db(self,keyid):
 
         if not self.keydb.has_key(keyid):
@@ -174,7 +176,7 @@ class keys(object):
         if self.deprecated:
             raise Exception("Deprecated keys can only be used for decrypting.")
         x = xipher(self.key_val)
-        hmackey = Hash('whirlpool',self.key_val).digest()
+        hmackey = self.derive_hmackey(self.key_val)
 
         ciphertext = x.encrypt(data)
         hmacdata   = Hash('whirlpool',ciphertext).hmac(hmackey,True)
@@ -205,7 +207,7 @@ class keys(object):
                     raise Exception("The very key used to decrypt this does not exists or has expired.")
             
             x = xipher(self.key_val)
-            hmackey = Hash('whirlpool',self.key_val).digest()
+            hmackey = self.derive_hmackey(self.key_val)
             check_hmac = Hash('whirlpool',data_ciphertext).hmac(hmackey,True)
             if check_hmac != data_HMAC:
                 print 'HMAC CHECK FAILURE.'
