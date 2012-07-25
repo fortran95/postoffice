@@ -12,7 +12,7 @@ def senderconfirm(message,warning=None):
     prompts_rowindex = 0
 
     msglbl = Label(prompts,text='\n系统准备接收新密钥\n请仔细检查以便决定是否接收：\n')
-    msgbox = Text(prompts,height=25,width=100)
+    msgbox = Text(prompts,height=25,width=100,bd=3)
     msgbox.insert(END,message)
     msgbox.config(state=DISABLED)
     msgbox['background'] = '#11d'

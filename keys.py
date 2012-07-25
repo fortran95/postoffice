@@ -1,6 +1,9 @@
 #-*- coding:utf-8 -*-
 from xi.hashes import Hash
 from xi.ciphers import xipher
+from gui.sender_confirm import senderconfirm as scbox
+import consult_cert
+
 import random,json,time,os,sys,shelve
 
 BASEPATH = os.path.realpath(os.path.dirname(sys.argv[0]))
@@ -108,6 +111,10 @@ class keys(object):
             key_val     = receiver_cert.private_decrypt(key_enc)
             key_sig_src = "%s|%s|%s|%s|%s" % (key_id,key_val.encode('hex'),key_expire,key_depr,key_fresh)
             # TODO VERIFY RELIABILITY STATE OF SENDER'S CERT.
+            consult_report = consult_cert.report(sender_cert)
+            if not scbox(consult_report):
+                raise Exception("User rejected loading the key.")
+
             if not sender_cert.verify_sign(key_sig_src,key_sig):
                 raise Exception("Signature check failed.")
             self.key_id,self.key_expire,self.key_depr,self.key_fresh,self.key_val = key_id,key_expire,key_depr,key_fresh,key_val

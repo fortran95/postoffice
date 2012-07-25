@@ -6,7 +6,7 @@ BASEPATH = os.path.realpath(os.path.dirname(sys.argv[0]))
 ROOTCERTPATH = os.path.join(BASEPATH,'xi','user','rootcerts')
 got_rootcerts = {}
 
-def draw_certbox(cert,isroot,indent=0,width=42):
+def draw_certbox(cert,isroot,indent=0,trustlevel=None,width=42):
     subject = cert.subject
     if len(subject) > width - 4:
         subject = subject[0:width - 8] + '...'
@@ -18,21 +18,24 @@ def draw_certbox(cert,isroot,indent=0,width=42):
         else:
             showid2 += fid[i*2:i*2+2] + ' '
     indents = ' ' * indent
-    ret =  indents + '+' + '-' * (width - 2) + '+\n'
+    if trustlevel != None:
+        ret = indents + '+' + ('| TrustLevel ' + str(trustlevel) + ' |').center(width - 2,'-') + '+\n'
+    else:
+        ret = indents + '+' + '-' * (width-2) + '+\n'
     ret += indents + '| Subject:' + ' ' * (width-11) + '|\n'
     ret += indents + '|  ' + subject + ' ' * (width - 4 - len(subject)) + '|\n'
     ret += indents + '| FingerPrint:  ' + showid1 + ' ' * (width - 17 - len(showid1)) + '|\n'
     ret += indents + '|' + ' ' * 15 + showid2 + ' ' * (width - 17 - len(showid2)) + '|\n'
     if isroot == True:
-        ret += indents + '| ' + ' Yes this is root certificate. '.center(width-4,':') + ' |\n'
+        ret += indents + '| ' + ' Root Certificate Confirmed '.center(width-4,':') + ' |\n'
     elif isroot == False:
-        ret += indents + '| ' + ' This is NOT root certificate! '.center(width-4,':') + ' |\n'
+        ret += indents + '| ' + ' CAUTION: NOT root certificate! '.center(width-4,':') + ' |\n'
 
     ret += indents + '+' + '-' * (width-2) + '+\n'
 
     return ret
 
-def printbox(consultant,result,indent):
+def printbox(consultant,result,indent,trustlevel=None):
     global got_rootcerts
     ret = ''
     for each in result:
@@ -41,13 +44,13 @@ def printbox(consultant,result,indent):
         cert       = consultant.indexes[certid][0]
         isroot     = consultant.indexes[certid][1]
         if type(result[each]) == bool:
-            ret += draw_certbox(cert,isroot,indent)
+            ret += draw_certbox(cert,isroot,indent,trustlevel)
             if isroot:
                 got_rootcerts[certid] = cert
         else:
             if isroot == False:
                 isroot = None
-            ret += draw_certbox(cert,isroot,indent)
+            ret += draw_certbox(cert,isroot,indent,trustlevel)
             ret += printbox(consultant,result[each],indent + 5)
     return ret
 
@@ -63,19 +66,26 @@ def report(sendercert):
     conr = consultant.consult(sendercert)
 
     if conr != True and conr != False:
-        conrboxes = printbox(consultant,conr,1)
+        conrboxes = printbox(consultant,conr,2)
+        authmsg = u' 本证书经过如下根证书签署：\n'
+        for x in got_rootcerts:
+            authmsg += '  [%s]' % got_rootcerts[x].subject + '\n'
+        authmsg += u' 具体关系图为：\n'
+        authmsg += conrboxes
     elif conr == True:
-        conrboxes = ' 这是一个根证书，可以相信。'
+        authmsg = u' 这是一个根证书，可以相信。'
     elif conr == False:
-        conrboxes = ' 本证书携带的签名不能辨认，无法确认其可信性。'
+        authmsg = u' 本证书携带的签名不能辨认，无法确认其可信性。'
 
 
     ret = u"""
-本证书信息如下：
+证书信息
+========
 %s
-认证信息如下：
+认证意见
+========
 %s
-    """ % (draw_certbox(sendercert,None),conrboxes)
+    """ % (draw_certbox(sendercert,None),authmsg)
 
     return ret.strip()
 
@@ -86,4 +96,4 @@ if __name__ == '__main__':
     boxstr = report(x)
 
     from gui.sender_confirm import senderconfirm as sc
-    sc(boxstr)
+    print sc(boxstr)
