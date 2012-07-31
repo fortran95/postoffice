@@ -36,6 +36,8 @@ def process_letter(l):
     return outputbuffer
 
 BASEPATH = os.path.realpath(os.path.dirname(sys.argv[0]))
+PATH_log     = os.path.join(BASEPATH,'system.log')
+
 BASEPATH = os.path.join(BASEPATH,'boxes','outgoing')
 
 PATH_queue   = os.path.join(BASEPATH,'queue')
@@ -58,9 +60,14 @@ for filename in queued:
 
         outputfilename = os.path.join(PATH_handled,l.attributes['VIA'] + '.' + uniqid())
         ret.write(outputfilename)
-        print "Handled a letter."
+
+        log.info('Handled one letter: [%s] to [%s] via [%s] tagged [%s].',
+            l.attributes['SENDER'],l.attributes['RECEIVER'],l.attributes['VIA'],l.attributes['TAG'])
+
     except Exception,e:
-        print "Error while processing outgoing letter(s): %s" % e
+        
+        log.exception("Error processing letter: %s",e)
+        
         # Move to failed
         shutil.copy(filepath,os.path.join(PATH_error,filename))
     os.remove(filepath)

@@ -184,6 +184,8 @@ class keys(object):
                     newest_keyid = keyid
                     newest_depr = self.keydb[keyid]['key_depr']
 
+        log.info('Found and selected a key. ID[%s]',newest_keyid)
+
         return self.load_db(newest_keyid)
     def encrypt(self,data,raw=False):
         if self.deprecated:
