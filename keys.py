@@ -4,9 +4,12 @@ from xi.ciphers import xipher
 from gui.sender_confirm import senderconfirm as scbox
 import consult_cert
 
-import random,json,time,os,sys,shelve
+import random,json,time,os,sys,shelve,logging
 
 BASEPATH = os.path.realpath(os.path.dirname(sys.argv[0]))
+
+logging.basicConfig(filename='example.log',level=logging.DEBUG)
+log = logging.getLogger('postoffice.keys')
 
 class keys(object):
     key_id,key_val,key_expire,key_depr = None,None,None,None
@@ -73,6 +76,8 @@ class keys(object):
             'activated'     :False,
             }
 
+        log.info('New symmetric key generated.ID[%s] Expire_Time[%s]',keyinfo['ID'],keyinfo['Expire_Time'])
+
         if not raw:
             return json.dumps(keyinfo)
         return keyinfo # Key info can be saved to anywhere as long as certificate is protected.
@@ -132,7 +137,7 @@ class keys(object):
 
             return self.key_val
         except Exception,e:
-            print "Failed loading an intermediate key: %s" % e
+            log.exception("Failed loading an intermediate key: %s",e)
             return False
     def refresh_db(self):# Remove expired keys in database.
         for keyid in self.keydb:
@@ -218,7 +223,7 @@ class keys(object):
             hmackey = self.derive_hmackey(self.key_val)
             check_hmac = Hash('whirlpool',data_ciphertext).hmac(hmackey,True)
             if check_hmac != data_HMAC:
-                print 'HMAC CHECK FAILURE.'
+                log.debug('HMAC CHECK FAILURE.')
                 raise Exception("")
 
             try:
@@ -230,5 +235,5 @@ class keys(object):
             
             return plaintext
         except Exception,e:
-            print "Error decrypting with intermediate key: %s" % e
+            log.exception("Error decrypting with intermediate key: %s" % e)
             return False
