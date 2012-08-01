@@ -1,4 +1,8 @@
-import uuid,time,random
+import uuid,time,random,logging,os,sys
+
+BASEPATH = os.path.realpath(os.path.dirname(sys.argv[0]))
+logging.basicConfig(filename=os.path.join(BASEPATH,'system.log'),level=logging.INFO)
+
 def uniqid():
     return str(uuid.uuid5(uuid.uuid4(),str(time.time())))
 def splitjsons(text):

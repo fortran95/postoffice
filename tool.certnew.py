@@ -4,7 +4,9 @@ from xi.certificate import certificate
 from xi.publickeyalgo import _EC 
 from gui.inputbox import inputbox
 from gui.selector import selector
-import logging,sys,os
+import logging,sys,os,_util
+
+BASEPATH = os.path.realpath(os.path.dirname(sys.argv[0]))
 
 log = logging.getLogger('postoffice.tool.certnew')
 
@@ -42,12 +44,16 @@ except:
 print "证书主题：%s\nRSA比特数：%s\n椭圆曲线：%s\n等级：%s" % (subj,rsa_len,ec_type,level)
 print "信息收集完毕。开始生成证书..."
 
+log.info('Generate new certificate. Subject[%s] Level[%s] RSA_Bits[%s] EC_Type[%s]',subj,level,rsa_len,ec_type)
+
 c.generate(subj,level=level,bits=int(rsa_len),curve=_EC()._curves_id[ec_type])
 
 print "新证书已经生成，将保存到 certificates/ 下，请输入私有证书保护密码。"
 
+log.info('New certificate generation done.')
+
 certname = c.get_id()
-BASEPATH = os.path.join(os.path.dirname(sys.argv[0]),'certificates')
+BASEPATH = os.path.join(BASEPATH,'certificates')
 
 c.save_private_text(os.path.join(BASEPATH,'secret','%s.private' % certname))
 
@@ -55,3 +61,5 @@ publictext = c.get_public_text()
 open(os.path.join(BASEPATH,'public','%s.public' % certname),'w+').write(publictext)
 
 print "\n您的证书已经保存。文件名：%s.private 和 %s.public" % (certname,certname)
+
+log.info('New certificate saved: %s(.private & .public)',certname)

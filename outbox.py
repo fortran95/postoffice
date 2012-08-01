@@ -36,7 +36,6 @@ def process_letter(l):
     return outputbuffer
 
 BASEPATH = os.path.realpath(os.path.dirname(sys.argv[0]))
-PATH_log     = os.path.join(BASEPATH,'system.log')
 
 BASEPATH = os.path.join(BASEPATH,'boxes','outgoing')
 
@@ -44,7 +43,6 @@ PATH_queue   = os.path.join(BASEPATH,'queue')
 PATH_error   = os.path.join(BASEPATH,'error')
 PATH_handled = os.path.join(BASEPATH,'handled')
 
-logging.basicConfig(filename=PATH_log,level=logging.INFO)
 log = logging.getLogger('postoffice.outbox')
 
 queued = os.listdir(PATH_queue)
