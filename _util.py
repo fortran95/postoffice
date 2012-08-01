@@ -1,8 +1,17 @@
 import uuid,time,random,logging,os,sys
 
 BASEPATH = os.path.realpath(os.path.dirname(sys.argv[0]))
-logging.basicConfig(filename=os.path.join(BASEPATH,'system.log'),level=logging.INFO)
+###################################################################################################
 
+logging.basicConfig(
+    filename    = os.path.join(BASEPATH,'system.log'),
+    level       = logging.INFO,
+    format      = '[%(asctime)-22s][%(levelname)-8s] %(name)s (%(filename)s:%(lineno)d)\n  %(message)s\n',
+    datefmt     = '%Y-%m-%d %I:%M:%S %P'
+    )
+#logging.setLoggerClass(ColoredLogger)
+
+###################################################################################################
 def uniqid():
     return str(uuid.uuid5(uuid.uuid4(),str(time.time())))
 def splitjsons(text):
