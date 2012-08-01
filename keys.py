@@ -8,7 +8,6 @@ import random,json,time,os,sys,shelve,logging
 
 BASEPATH = os.path.realpath(os.path.dirname(sys.argv[0]))
 
-logging.basicConfig(filename='example.log',level=logging.DEBUG)
 log = logging.getLogger('postoffice.keys')
 
 class keys(object):

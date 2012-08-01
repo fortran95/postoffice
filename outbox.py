@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import letter,alias,keys,packager
-import os,shutil,sys,json
+import os,shutil,sys,json,logging
 from _util import uniqid
 
 def process_letter(l):
@@ -43,6 +43,9 @@ BASEPATH = os.path.join(BASEPATH,'boxes','outgoing')
 PATH_queue   = os.path.join(BASEPATH,'queue')
 PATH_error   = os.path.join(BASEPATH,'error')
 PATH_handled = os.path.join(BASEPATH,'handled')
+
+logging.basicConfig(filename=PATH_log,level=logging.INFO)
+log = logging.getLogger('postoffice.outbox')
 
 queued = os.listdir(PATH_queue)
 for filename in queued:
