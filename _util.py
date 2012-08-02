@@ -1,10 +1,11 @@
 import uuid,time,random,logging,os,sys
 
 BASEPATH = os.path.realpath(os.path.dirname(sys.argv[0]))
+PATH_log = os.path.join(BASEPATH,'system.log')
 ###################################################################################################
 
 logging.basicConfig(
-    filename    = os.path.join(BASEPATH,'system.log'),
+    filename    = PATH_log,
     level       = logging.INFO,
     format      = '[%(asctime)-22s][%(levelname)-8s] %(name)s (%(filename)s:%(lineno)d)\n  %(message)s\n',
     datefmt     = '%Y-%m-%d %I:%M:%S %P'
