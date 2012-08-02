@@ -5,18 +5,22 @@ import _utils
 def logviewer(logfilepath,warning=None):
     root = Tk()
 
+    # Prompts begin
     prompts = Frame(root)
     prompts_rowindex = 0
 
-    message = open(logfilepath,'r').read()
-
     msgbox = Text(prompts,height=25,width=100,bd=3)
-    msgbox.insert(END,message)
     msgbox.config(state=DISABLED)
     msgbox['background'] = '#11d'
     msgbox['foreground'] = '#fff'
     msgbox.grid(row=prompts_rowindex,column=0)
-    prompts_rowindex += 2
+
+    yscroll = Scrollbar(prompts)
+    msgbox['yscrollcommand'] = yscroll.set
+    yscroll['command'] = msgbox.yview
+    yscroll.grid(row=prompts_rowindex,column=1,sticky=N+S+W+E)
+
+    prompts_rowindex += 1
 
     if warning != None:
         warn = Label(prompts,text=warning,bd=5)
@@ -26,6 +30,18 @@ def logviewer(logfilepath,warning=None):
         prompts_rowindex += 1
 
     prompts.grid(row=0,column=0,columnspan=2,sticky=N+S+W+E)
+    # Prompts End
+
+    def refresh(*args):
+        if yscroll.get()[1] == 1.0:
+            msgbox['state'] = NORMAL
+            msgbox.delete(1.0,END)
+            msgbox.insert(END,open(logfilepath,'r').read())
+            msgbox['state']= DISABLED
+            msgbox.see(END)
+        root.after(500,refresh)
+
+    root.after(1,refresh)
 
     root.title('ξ系统 - 系统日志')
 
