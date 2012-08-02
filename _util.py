@@ -1,8 +1,10 @@
 import uuid,time,random,logging,os,sys
 
-BASEPATH     = os.path.realpath(os.path.dirname(sys.argv[0]))
-PATH_log     = os.path.join(BASEPATH,'system.log')
-PATH_alias   = os.path.join(BASEPATH,'config','alias.cfg')
+BASEPATH       = os.path.realpath(os.path.dirname(sys.argv[0]))
+PATH_log       = os.path.join(BASEPATH,'system.log')
+PATH_alias     = os.path.join(BASEPATH,'config','alias.cfg')
+PATH_certs_pub = os.path.join(BASEPATH,'certificates','public')
+PATH_certs_prv = os.path.join(BASEPATH,'certificates','secret')
 ###################################################################################################
 
 logging.basicConfig(
