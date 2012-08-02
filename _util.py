@@ -1,7 +1,8 @@
 import uuid,time,random,logging,os,sys
 
-BASEPATH = os.path.realpath(os.path.dirname(sys.argv[0]))
-PATH_log = os.path.join(BASEPATH,'system.log')
+BASEPATH     = os.path.realpath(os.path.dirname(sys.argv[0]))
+PATH_log     = os.path.join(BASEPATH,'system.log')
+PATH_alias   = os.path.join(BASEPATH,'config','alias.cfg')
 ###################################################################################################
 
 logging.basicConfig(

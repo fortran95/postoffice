@@ -4,11 +4,12 @@
 # 用于输出：从一个应用的特定账户接受信息时，采用的证书
 #           以及通过特定应用指定接受账户时，采用的证书
 import ConfigParser,os,sys
+import _util
 from gui import pinreader
 from xi import certificate
 
 BASEPATH = os.path.realpath(os.path.dirname(sys.argv[0]))
-defaultpath = os.path.join('config','alias.cfg')
+defaultpath = _util.PATH_alias
 
 def get_certsubject(account,software,path=defaultpath):
     global BASEPATH

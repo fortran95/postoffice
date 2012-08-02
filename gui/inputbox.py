@@ -4,7 +4,7 @@ from _utils import *
 
 ret = False
 
-def inputbox(prompt,title='Xi'):
+def inputbox(prompt,title='Xi',multiline=False):
     global ret
     ret = False
 
@@ -13,13 +13,19 @@ def inputbox(prompt,title='Xi'):
     lbl = Label(root,text=prompt,justify=LEFT)
     lbl.grid(row=0,column=0,columnspan=2,padx=5,pady=5)
 
-    entry = Entry(root)
+    if multiline:
+        entry = Text(root,width=40,height=10)
+    else:
+        entry = Entry(root)
     entry.grid(row=1,column=0,columnspan=2,sticky=N+S+E+W)
 
     btnOK = Button(root,text='确定')
-    def okcommand(r=root,e=entry):
+    def okcommand(r=root,e=entry,m=multiline):
         global ret
-        ret = e.get()
+        if m:
+            ret = e.get(1.0,END)
+        else:
+            ret = e.get()
         r.destroy()
     btnOK['command'] = okcommand
     btnOK.grid(row=2,column=0)
