@@ -7,8 +7,8 @@ PATH_log = os.path.join(BASEPATH,'system.log')
 logging.basicConfig(
     filename    = PATH_log,
     level       = logging.INFO,
-    format      = '[%(asctime)-22s][%(levelname)-8s] %(name)s (%(filename)s:%(lineno)d)\n  %(message)s\n',
-    datefmt     = '%Y-%m-%d %I:%M:%S %P'
+    format      = '[%(asctime)-19s][%(levelname)-8s] %(name)s (%(filename)s:%(lineno)d)\n  %(message)s\n',
+    datefmt     = '%Y-%m-%d %H:%M:%S'
     )
 #logging.setLoggerClass(ColoredLogger)
 

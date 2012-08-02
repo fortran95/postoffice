@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from Tkinter import *
-import _utils
+import _utils,time,os,logging
+
+log = logging.getLogger('postoffice.gui.logviewer')
 
 def logviewer(logfilepath,warning=None):
     root = Tk()
@@ -9,16 +11,23 @@ def logviewer(logfilepath,warning=None):
     prompts = Frame(root)
     prompts_rowindex = 0
 
+    lblTimeMark = Label(prompts,text='当前时间：',justify=RIGHT)
+    currentTime = Label(prompts,bd=1,text='2000-10-10',justify=LEFT)
+
+    lblTimeMark.grid(row=prompts_rowindex,column=0,sticky=N+S+W+E,pady=5)
+    currentTime.grid(row=prompts_rowindex,column=1,columnspan=2,sticky=N+S+W+E,pady=5)
+    prompts_rowindex += 1
+
     msgbox = Text(prompts,height=25,width=100,bd=3)
     msgbox.config(state=DISABLED)
     msgbox['background'] = '#11d'
     msgbox['foreground'] = '#fff'
-    msgbox.grid(row=prompts_rowindex,column=0)
+    msgbox.grid(row=prompts_rowindex,column=0,columnspan=3)
 
     yscroll = Scrollbar(prompts)
     msgbox['yscrollcommand'] = yscroll.set
     yscroll['command'] = msgbox.yview
-    yscroll.grid(row=prompts_rowindex,column=1,sticky=N+S+W+E)
+    yscroll.grid(row=prompts_rowindex,column=3,sticky=N+S+W+E)
 
     prompts_rowindex += 1
 
@@ -34,14 +43,21 @@ def logviewer(logfilepath,warning=None):
 
     def refresh(*args):
         if yscroll.get()[1] == 1.0:
-            msgbox['state'] = NORMAL
-            msgbox.delete(1.0,END)
-            msgbox.insert(END,open(logfilepath,'r').read())
-            msgbox['state']= DISABLED
-            msgbox.see(END)
+            newcontent = ''
+            if os.path.isfile(logfilepath):
+                newcontent = open(logfilepath,'r').read()
+            if newcontent != '':
+                msgbox['state'] = NORMAL
+                msgbox.delete(1.0,END)
+                msgbox.insert(END,newcontent)
+                msgbox['state'] = DISABLED
+                msgbox.see(END)
+            else:
+                log.warning('No logfile found. Try logging to create one.')
+        currentTime['text'] = time.strftime('%Y-%m-%d %H:%M:%S')
         root.after(500,refresh)
 
-    root.after(1,refresh)
+    root.after(0,refresh)
 
     root.title('ξ系统 - 系统日志')
 
