@@ -1,7 +1,8 @@
 #-*- coding:utf-8 -*-
 import _util
-from xi.hashes import Hash
-from xi.ciphers import xipher
+from xi.hashes          import Hash
+from xi.ciphers         import xipher
+from xi.certificate     import certificate
 from gui.sender_confirm import senderconfirm as scbox
 from gui.pinreader      import pinreader
 import consult_cert
@@ -165,12 +166,12 @@ class keys(object):
 
         # Decrypt Save key.
         def _pinreader(hint):
-            msg = '对称密钥需要解锁。\n请输入如下私有证书的密码：\n [%s]' % hint
+            msg = '瀵圭О瀵嗛挜闇�瑕佽В閿併�俓n璇疯緭鍏ュ涓嬬鏈夎瘉涔︾殑瀵嗙爜锛歕n [%s]' % hint
             return pinreader(False,message=msg)
         pin = _util.cache_get(keyid)
         if pin == None:
             pin = _pinreader(keyinfo['key_hint'])
-            # FIXME hash it!
+            pin = certificate().derive_savekey(pin)
         try:
             self.key_val = self._decryptor(pin,keyinfo['key_val']) # FIXME use decrypt and cache, update hmac key
         except Exception,e:
