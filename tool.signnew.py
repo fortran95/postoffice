@@ -7,7 +7,8 @@ from xi.certificate import certificate
 from gui.selector   import selector
 from gui.inputbox   import inputbox
 from gui.pinreader  import pinreader
-import logging,os,sys,ConfigParser,json
+
+import logging,os,sys,ConfigParser,json,copy
 
 log = logging.getLogger('xi.tool.signnew')
 
@@ -61,43 +62,75 @@ if jobid == 2: # 导入证书签名
         cid = c.get_id()
         if cid == certified:
             if u in privatelist:
-                def _pinreader(b=False,p1='',p2=''):
-                    msg = u'正在导入密钥。\n请您输入密码解密以下证书：\n [%s]' % c.subject
-                    return pinreader(b,message=msg)
-
                 holder = certificate()
+                holder_pubpath = c_path
+
+                def _pinreader(b=False,p1='',p2=''):
+                    msg = u'正在将签名导入私有证书。\n请您输入密码解密以下证书：\n [%s]\n\n如果取消，将试图将签名只导入到公钥证书。' % c.subject
+                    return pinreader(b,message=msg) 
                 try:
                     holder_savepath = os.path.join(_util.BASEPATH,privatelist[u])
-                    holder_pubpath  = c_path
                     holder.load_private_text(holder_savepath,_pinreader)
                 except:
+                    holder = None
                     print "解密证书失败，密码错误或者用户取消。"
-                    
-                    log.exception('Failed loading signature. Private certificate cannot be loaded, bad passphrase or user cancelled.')
+                    log.exception('Failed loading signature to private certificate. Bad passphrase or user cancelled.')
+                    if raw_input('如想继续将签名只导入公钥证书，请输入任意内容后回车。') == '':
+                        exit()
 
-                    exit()
+            if holder == None:  # Load public cert only.
+                print "加载公钥证书..."
+                holder = copy.copy(c)
+            
+                
         elif cid == issued:
-            issuer = c
+            issuer = copy.copy(c)
 
     if holder != None:
-        # holder must be a private certificate
+        print u"确认是给[%s](ID:%s)的签名。" % (holder.subject,holder.get_id())
+
+        # Check
+        needCheck = True
+
+        if issuer == None:
+            info.warning('THIS SIGNATURE CANNOT BE VERIFIED.')
+            print "\n警告！找不到用于验证此签名的证书！\n"
+        else:
+            print u"签发人[%s](ID:%s)，进行验证..." % (issuer.subject,issuer.get_id())
+            result = issuer.verify_signature(signparsed)
+            if result != True:
+                log.warning('SIGNATURE INVALID!')
+                print "\n警告！此签名经验证无效！\n"
+            else:
+                needCheck = False
+
+        if needCheck:
+            chk = raw_input("导入此签名是危险的，如需继续，请抄写括号内的单词 [CONTINUE ANYWAY]:")
+            if chk != 'CONTINUE ANYWAY':
+                exit()
+
+        print "开始导入签名..."
         try:
             holder.load_signature(signparsed)
         except Exception,e:
             log.exception('Given signature cannot even pass primarily check.')
-            print "证书数据错误。"
+            print "签名数据错误。"
             exit()
 
-        print "保存私有证书。您应该不需为此再次输入密钥..."
-
-        holder.save_private_text(holder_savepath,_pinreader)
+        if holder.is_ours:
+            print "保存私有证书。您应该不需为此再次输入密钥..."
+            holder.save_private_text(holder_savepath,_pinreader)
+            log.info("Signature imported to private certificate and saved.")
 
         print "重新产生公钥证书并写入..."
-
         pubtext = holder.get_public_text()
 
-        open(holder_pubpath,'w+').write(pubtext)
-
+        open(holder_pubpath,'w+').write(pubtext)  
+        
+        log.info("Signature imported to public certificate and saved.")
+        print "签名已经导入。"
+        
+        exit()
 else:
     if jobid == 0:  # FIXME
         pass
