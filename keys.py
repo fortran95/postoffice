@@ -1,7 +1,9 @@
 #-*- coding:utf-8 -*-
+import _util
 from xi.hashes import Hash
 from xi.ciphers import xipher
 from gui.sender_confirm import senderconfirm as scbox
+from gui.pinreader      import pinreader
 import consult_cert
 
 import random,json,time,os,sys,shelve,logging
@@ -70,7 +72,9 @@ class keys(object):
             'key_expire'    :self.key_expire,
             'key_depr'      :self.key_depr,
             'key_fresh'     :self.key_fresh,
-            'key_val'       :self.key_val,
+            'key_val'       :self._encryptor(sender_cert.private_save_key,self.key_val),
+            'key_hint'      :sender_cert.subject,
+            'hmackey'       :self.derive_hmackey(self.key_val),
             'exchange_info' :keyinfo,
             'activated'     :False,
             }
@@ -114,7 +118,8 @@ class keys(object):
             # Validate key signature.
             key_val     = receiver_cert.private_decrypt(key_enc)
             key_sig_src = "%s|%s|%s|%s|%s" % (key_id,key_val.encode('hex'),key_expire,key_depr,key_fresh)
-            # TODO VERIFY RELIABILITY STATE OF SENDER'S CERT.
+            
+            # VERIFY RELIABILITY STATE OF SENDER'S CERT.
             consult_report = consult_cert.report(sender_cert)
             if not scbox(consult_report):
                 raise Exception("User rejected loading the key.")
@@ -130,7 +135,9 @@ class keys(object):
                     'key_expire'    :self.key_expire,
                     'key_depr'      :self.key_depr,
                     'key_fresh'     :self.key_fresh,
-                    'key_val'       :self.key_val,
+                    'key_val'       :self._encryptor(receiver_cert.private_save_key,self.key_val),
+                    'key_hint'      :receiver_cert.subject,
+                    'hmackey'       :self.derive_hmackey(self.key_val),
                     'activated'     :True,
                     }
 
@@ -142,7 +149,7 @@ class keys(object):
         for keyid in self.keydb:
             if type(self.keydb[keyid]) != str:
                 if self.keydb[keyid]['key_expire'] < time.time():
-                    self.keydb[keyid] = self.derive_hmackey(self.keydb[keyid]['key_val'])
+                    self.keydb[keyid] = self.keydb[keyid]['hmackey']
     def load_db(self,keyid):
 
         if not self.keydb.has_key(keyid):
@@ -154,8 +161,23 @@ class keys(object):
             return False
         
         self.key_id = keyid
-        self.key_expire,self.key_depr,self.key_fresh,self.key_val = keyinfo['key_expire'],keyinfo['key_depr'],keyinfo['key_fresh'],keyinfo['key_val']
-        
+        self.key_expire,self.key_depr,self.key_fresh = keyinfo['key_expire'],keyinfo['key_depr'],keyinfo['key_fresh']
+
+        # Decrypt Save key.
+        def _pinreader(hint):
+            msg = '对称密钥需要解锁。\n请输入如下私有证书的密码：\n [%s]' % hint
+            return pinreader(False,message=msg)
+        pin = _util.cache_get(keyid)
+        if pin == None:
+            pin = _pinreader(keyinfo['key_hint'])
+            # FIXME hash it!
+        try:
+            self.key_val = self._decryptor(pin,keyinfo['key_val']) # FIXME use decrypt and cache, update hmac key
+        except Exception,e:
+            log.exception('Failed decrypting symmetric key [%s]: User supplied incorrect passphrase or had cancelled.',keyid)
+            raise Exception('Cannot load symmetric key: %s' % e)
+
+        # # # #
         if keyinfo.has_key('exchange_info'):
             self.exchange_info = keyinfo['exchange_info']
         else:
@@ -186,13 +208,20 @@ class keys(object):
         log.info('Found and selected a key. ID[%s]',newest_keyid)
 
         return self.load_db(newest_keyid)
+    def _encryptor(self,key,plaintext):
+        x = xipher(key)
+        return x.encrypt(plaintext)
+
+    def _decryptor(self,key,ciphertext):
+        x = xipher(key)
+        return x.decrypt(ciphertext)
+
     def encrypt(self,data,raw=False):
         if self.deprecated:
             raise Exception("Deprecated keys can only be used for decrypting.")
-        x = xipher(self.key_val)
-        hmackey = self.derive_hmackey(self.key_val)
 
-        ciphertext = x.encrypt(data)
+        hmackey = self.derive_hmackey(self.key_val)
+        ciphertext = self._encryptor(self.key_val,data)
         hmacdata   = Hash('whirlpool',ciphertext).hmac(hmackey,True)
 
         retinf = {
@@ -220,7 +249,6 @@ class keys(object):
                 if not self.load_db(data_key_id):
                     raise Exception("The very key used to decrypt this does not exists or has expired.")
             
-            x = xipher(self.key_val)
             hmackey = self.derive_hmackey(self.key_val)
             check_hmac = Hash('whirlpool',data_ciphertext).hmac(hmackey,True)
             if check_hmac != data_HMAC:
@@ -228,7 +256,7 @@ class keys(object):
                 raise Exception("")
 
             try:
-                plaintext = x.decrypt(data_ciphertext)
+                plaintext = self._decryptor(self.key_val,data_ciphertext)
             except Exception,e:
                 raise Exception("Data corrupted - %s." % e)
             

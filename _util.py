@@ -38,3 +38,9 @@ def splitjsons(text):
             text = text[i:].strip()
             i = 0
     return ret
+
+###################################################################################################
+def cache_get(key): # FIXME should get cached value, if no, return None
+    return None
+def cache_set(key,value,life):
+    pass
