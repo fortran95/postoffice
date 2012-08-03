@@ -172,11 +172,13 @@ class keys(object):
         if pin == None:
             pin = _pinreader(keyinfo['key_hint'])
             pin = certificate().derive_savekey(pin)
+            _util.cache_set(keyid,pin,3600) # FIXME User config : life
         try:
-            self.key_val = self._decryptor(pin,keyinfo['key_val']) # FIXME use decrypt and cache, update hmac key
+            self.key_val = self._decryptor(pin,keyinfo['key_val'])
         except Exception,e:
             log.exception('Failed decrypting symmetric key [%s]: User supplied incorrect passphrase or had cancelled.',keyid)
             raise Exception('Cannot load symmetric key: %s' % e)
+        self.keydb[keyid]['hmackey'] = self.derive_hmackey(self.key_val) # Update HMAC key. Merely rubbish.
 
         # # # #
         if keyinfo.has_key('exchange_info'):

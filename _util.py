@@ -1,10 +1,11 @@
-import uuid,time,random,logging,os,sys
+import uuid,time,random,logging,os,sys,shelve
 
 BASEPATH       = os.path.realpath(os.path.dirname(sys.argv[0]))
 PATH_log       = os.path.join(BASEPATH,'system.log')
 PATH_alias     = os.path.join(BASEPATH,'config','alias.cfg')
 PATH_certs_pub = os.path.join(BASEPATH,'certificates','public')
 PATH_certs_prv = os.path.join(BASEPATH,'certificates','secret')
+PATH_cache     = os.path.join(BASEPATH,'secrets','cached.db')
 ###################################################################################################
 
 logging.basicConfig(
@@ -41,6 +42,21 @@ def splitjsons(text):
 
 ###################################################################################################
 def cache_get(key): # FIXME should get cached value, if no, return None
+    global PATH_cache
+    c = shelve.open(PATH_cache,writeback=True)
+    nowtime = time.time()
+    for k in c:
+        if c[k] == None:
+            continue
+        if c[k][1] < nowtime:
+            c[k] = None
+    if c.has_key(key):
+        item = c[key]
+        if item != None:
+            return item[0]
     return None
 def cache_set(key,value,life):
-    pass
+    global PATH_cache
+    c = shelve.open(PATH_cache,writeback=True)
+    nowtime = time.time()
+    c[key] = (value,nowtime + life)
