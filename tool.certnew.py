@@ -4,6 +4,7 @@ from xi.certificate import certificate
 from xi.publickeyalgo import _EC 
 from gui.inputbox import inputbox
 from gui.selector import selector
+from gui.spinbox  import spinbox
 import logging,sys,os,_util
 
 BASEPATH = os.path.realpath(os.path.dirname(sys.argv[0]))
@@ -21,7 +22,7 @@ subj = inputbox('请输入新证书的题目：\n 1.只能由下列字符组成�
 if c._validate_subject(subj) == False:
     exit()
 
-rsa_len = selector('选择RSA密钥长度：',['1024','2048','3072','4096','8192'])
+rsa_len = spinbox('选择RSA密钥长度：',['1024','2048','3072','4096','8192'])
 if rsa_len == False:
     exit()
 

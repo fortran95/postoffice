@@ -7,6 +7,7 @@ from xi.certificate import certificate
 from gui.selector   import selector
 from gui.inputbox   import inputbox
 from gui.pinreader  import pinreader
+from gui.spinbox    import spinbox
 
 import logging,os,sys,ConfigParser,json,copy
 
@@ -145,8 +146,15 @@ else:
     if signwith == False:
         exit()
 
-    trustlevel = 1 # FIXME ask user input.
-    signlife   = 120 * 86400 # FIXME ask userinput
+    trustlevel = spinbox('请选择信任等级（-3到3）：\n 数字越大表示越信任。',range(-3,4))
+    if trustlevel == False:
+        exit()
+
+    signdays = spinbox('请选择签名有效期（天）：',(120,90,60,365,730,30,15,7,1))
+    if signdays == False:
+        exit()
+    signlife   = int(signdays) * 86400
+
 
     log.info('[%s] is trying to sign [%s].',signwith,signtarget)
 
@@ -154,7 +162,9 @@ else:
     holder = certificate()
 
     def _pinreader(b=False,p1='',p2=''):
-        msg = '即将签署以下证书：\n [%s]\n\n需要您输入密码解密以下证书：\n [%s]' % (signtarget,signwith)
+        msg = '即将签署以下证书：\n [%s]\n 信任等级：[%s]\n 有效期：[%s] 天\n需要您输入密码解密以下证书：\n [%s]' % (
+            signtarget,trustlevel,signdays,signwith
+            )
         return pinreader(b,message=msg)
     
     holder.load_public_text  ( open( os.path.join(_util.BASEPATH,publiclist[signtarget]) ,'r').read() )
@@ -163,6 +173,7 @@ else:
     except Exception,e:
         print "退出签署程序。密码错误或者用户手动取消。"
         log.warning('Sign process exited, either of a wrong passphrase, or had been cancelled manually.')
+        exit()
 
     signature = signer.sign_certificate(holder,trustlevel,signlife)
     print signature

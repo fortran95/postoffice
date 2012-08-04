@@ -12,7 +12,7 @@ def spinbox(prompt,v,title='Xi'):
     root = Tk()
     
     lbl = Label(root,text=prompt,justify=LEFT)
-    lbl.grid(row=0,column=0,columnspan=2,padx=5,pady=5)
+    lbl.grid(row=0,column=0,columnspan=2,padx=5,pady=5,sticky=N+S+E+W)
 
     entry = Spinbox(root,values=v)
     entry['state'] = "readonly"
