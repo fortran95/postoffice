@@ -175,8 +175,10 @@ else:
         exit()
 
     if signer.level <= holder.level:
+        log.warning('Trying to sign a higher level certificate. User confirmation required.')
         if not _util.serious_confirm("您用于签署的证书无权进行本操作，因为被签署的证书等级不低于您。\n即使签署，该签名也是无效的。"):
             exit()
+        log.info('User confirmed signing anyway.')
 
     signature = signer.sign_certificate(holder,trustlevel,signlife)
 
