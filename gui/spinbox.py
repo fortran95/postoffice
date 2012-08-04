@@ -2,9 +2,10 @@
 
 # 接受在一定范围内的一个整数
 from Tkinter import *
+from _utils  import *
 ret = False
 
-def spinbox(prompt,vtitle='Xi'):
+def spinbox(prompt,v,title='Xi'):
     global ret
     ret = False
 
@@ -14,6 +15,7 @@ def spinbox(prompt,vtitle='Xi'):
     lbl.grid(row=0,column=0,columnspan=2,padx=5,pady=5)
 
     entry = Spinbox(root,values=v)
+    entry['state'] = "readonly"
     entry.grid(row=1,column=0,columnspan=2,sticky=N+S+E+W)
 
     btnOK = Button(root,text='确定')
@@ -44,4 +46,4 @@ def spinbox(prompt,vtitle='Xi'):
     return ret
 
 if __name__ == '__main__':
-    print spinbox('hello')
+    print spinbox('hello',[1024,2048,4096])
