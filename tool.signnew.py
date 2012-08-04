@@ -176,4 +176,9 @@ else:
         exit()
 
     signature = signer.sign_certificate(holder,trustlevel,signlife)
-    print signature
+
+    savepath = os.path.join(_util.PATH_output,_util.uniqid() + '.sig')
+    open(savepath,'w+').write(signature)
+
+    print '您的签名已经写入到：\n %s' % savepath
+    log.info('Signature saved to [%s].',savepath)

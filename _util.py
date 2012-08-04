@@ -6,6 +6,7 @@ PATH_alias     = os.path.join(BASEPATH,'config','alias.cfg')
 PATH_certs_pub = os.path.join(BASEPATH,'certificates','public')
 PATH_certs_prv = os.path.join(BASEPATH,'certificates','secret')
 PATH_cache     = os.path.join(BASEPATH,'secrets','cached.db')
+PATH_output    = os.path.join(BASEPATH,'boxes','output')
 
 CONFIG_cache_password_life = 3600
 ###################################################################################################
