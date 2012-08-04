@@ -6,6 +6,8 @@ PATH_alias     = os.path.join(BASEPATH,'config','alias.cfg')
 PATH_certs_pub = os.path.join(BASEPATH,'certificates','public')
 PATH_certs_prv = os.path.join(BASEPATH,'certificates','secret')
 PATH_cache     = os.path.join(BASEPATH,'secrets','cached.db')
+
+CONFIG_cache_password_life = 3600
 ###################################################################################################
 
 logging.basicConfig(
@@ -41,7 +43,7 @@ def splitjsons(text):
     return ret
 
 ###################################################################################################
-def cache_get(key): # FIXME should get cached value, if no, return None
+def cache_get(key):
     global PATH_cache
     c = shelve.open(PATH_cache,writeback=True)
     nowtime = time.time()

@@ -172,7 +172,7 @@ class keys(object):
         if pin == None:
             pin = _pinreader(keyinfo['key_hint'])
             pin = certificate().derive_savekey(pin)
-            _util.cache_set(keyid,pin,3600) # FIXME User config : life
+            _util.cache_set(keyid,pin,_util.CONFIG_cache_password_life)
         try:
             self.key_val = self._decryptor(pin,keyinfo['key_val'])
         except Exception,e:
