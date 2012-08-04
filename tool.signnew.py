@@ -106,8 +106,7 @@ if jobid == 2: # 导入证书签名
                 needCheck = False
 
         if needCheck:
-            chk = raw_input("导入此签名是危险的，如需继续，请抄写括号内的单词 [CONTINUE ANYWAY]:")
-            if chk != 'CONTINUE ANYWAY':
+            if not _util.serious_confirm("导入此签名是危险的，如需继续，请抄写括号内的单词 [CONTINUE ANYWAY]:"):
                 exit()
 
         print "开始导入签名..."
@@ -174,6 +173,10 @@ else:
         print "退出签署程序。密码错误或者用户手动取消。"
         log.warning('Sign process exited, either of a wrong passphrase, or had been cancelled manually.')
         exit()
+
+    if signer.level <= holder.level:
+        if not _util.serious_confirm("您用于签署的证书无权进行本操作，因为被签署的证书等级不低于您。\n即使签署，该签名也是无效的。"):
+            exit()
 
     signature = signer.sign_certificate(holder,trustlevel,signlife)
 

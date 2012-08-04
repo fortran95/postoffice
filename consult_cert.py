@@ -65,6 +65,8 @@ def report(sendercert):
     ])
     conr = consultant.consult(sendercert)
 
+    print conr
+
     if conr != True and conr != False:
         conrboxes = printbox(consultant,conr,2)
         authmsg = u' 本证书经过如下根证书签署：\n'
@@ -92,7 +94,7 @@ def report(sendercert):
 if __name__ == '__main__':
     from xi.certificate import certificate as certi
     x = certi()
-    x.load_public_text(open(os.path.join(BASEPATH,'xi','user','usercerts','sl.pub')).read())
+    x.load_public_text(open(os.path.join(BASEPATH,'certificates','public','neo.public')).read())
     boxstr = report(x)
 
     from gui.sender_confirm import senderconfirm as sc

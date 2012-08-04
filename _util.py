@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import uuid,time,random,logging,os,sys,shelve
 
 BASEPATH       = os.path.realpath(os.path.dirname(sys.argv[0]))
@@ -63,3 +64,9 @@ def cache_set(key,value,life):
     c = shelve.open(PATH_cache,writeback=True)
     nowtime = time.time()
     c[key] = (value,nowtime + life)
+###################################################################################################
+def serious_confirm(prompt):
+    chk = raw_input("\n--- 严重警告 ---\n%s\n\n如仍想继续，请抄写括号内的单词 [CONTINUE ANYWAY]:" % prompt)
+    if chk != 'CONTINUE ANYWAY':
+        return False
+    return True
