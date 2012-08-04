@@ -159,14 +159,16 @@ else:
 
     signer = certificate()
     holder = certificate()
+    holder.load_public_text  ( open( os.path.join(_util.BASEPATH,publiclist[signtarget]) ,'r').read() )
 
     def _pinreader(b=False,p1='',p2=''):
-        msg = '即将签署以下证书：\n [%s]\n 信任等级：[%s]\n 有效期：[%s] 天\n需要您输入密码解密以下证书：\n [%s]' % (
-            signtarget,trustlevel,signdays,signwith
-            )
+        msg = '即将签署以下证书：\n [%s]\n ' % signtarget
+        msg += '此证书的等级为 [%s] 级。\n' % holder.level
+        msg += '您即将进行的签署，参数如下：\n'
+        msg += ' 信任等级：[%s]\n 有效期：[%s] 天\n' % (trustlevel,signdays)
+        msg += '\n现在需要您输入密码解密签署证书：\n [%s]' % signwith
         return pinreader(b,message=msg)
     
-    holder.load_public_text  ( open( os.path.join(_util.BASEPATH,publiclist[signtarget]) ,'r').read() )
     try:
         signer.load_private_text (privatelist[signwith],_pinreader)
     except Exception,e:
@@ -176,7 +178,7 @@ else:
 
     if signer.level <= holder.level:
         log.warning('Trying to sign a higher level certificate. User confirmation required.')
-        if not _util.serious_confirm("您用于签署的证书无权进行本操作，因为被签署的证书等级不低于您。\n即使签署，该签名也是无效的。"):
+        if not _util.serious_confirm("您用于签署的证书(%d级)无权进行本操作，因为被签署的证书等级(%d级)不低于您。\n即使签署，该签名也是无效的。" % (signer.level,holder.level)):
             exit()
         log.info('User confirmed signing anyway.')
 

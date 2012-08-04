@@ -18,7 +18,7 @@ def pinreader(checktwice=False,**argv):
 
     if 'message' in argv.keys():
         msglbl = Label(prompts,text='下面是本次请求的信息：')
-        msgbox = Text(prompts,height=8,width=40)
+        msgbox = Text(prompts,height=15,width=50)
         msgbox.insert(END,argv['message'])
         msgbox.config(state=DISABLED)
         msglbl.grid(row=prompts_rowindex,column=0)
