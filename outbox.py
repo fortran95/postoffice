@@ -9,7 +9,7 @@ def process_letter(l):
     receiver   = alias.get_cert(l.attributes['RECEIVER'],l.attributes['VIA'],False)
 
     if sender_pub == False or receiver == False:
-        raise Exception("Cannot find sender or/and receiver's certificate.")
+        raise Exception("Cannot find sender[%s] or/and receiver[%s]'s certificate." % (l.attributes['SENDER'],l.attributes['RECEIVER']))
 
     outputbuffer = []
 
