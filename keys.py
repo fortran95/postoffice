@@ -150,7 +150,7 @@ class keys(object):
         for keyid in self.keydb:
             if type(self.keydb[keyid]) != str:
                 if self.keydb[keyid]['key_expire'] < time.time():
-                    self.keydb[keyid] = self.keydb[keyid]['hmackey']
+                    self.keydb[keyid] = self.derive_hmackey(self.keydb[keyid]['key_val'])
     def load_db(self,keyid):
 
         if not self.keydb.has_key(keyid):
