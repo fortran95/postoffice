@@ -43,7 +43,7 @@ def get_cert(account,software,secret=False,path=defaultpath):
         cfg.read(path)
         ret = certificate.certificate()
         def _pinreader(checktwice=False,p1='',p2='',s=secret,n=secname):
-            msg = '需要解密以下证书的私有存储：\n  %s' % n
+            msg = '需要解密以下用户的私有证书存储：\n  %s' % n
             if not secret:
                 warn = '由于配置错误，本次读取无法找到公开证书，所以试图从私有导入。\n请修改配置以改正此问题。'
                 return pinreader.pinreader(checktwice,message=msg,warning=warn)
