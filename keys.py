@@ -177,6 +177,7 @@ class keys(object):
             self.key_val = self._decryptor(pin,keyinfo['key_val'])
         except Exception,e:
             log.exception('Failed decrypting symmetric key [%s]: User supplied incorrect passphrase or had cancelled.',keyid)
+            _util.cache_del(keyid)
             raise Exception('Cannot load symmetric key: %s' % e)
         self.keydb[keyid]['hmackey'] = self.derive_hmackey(self.key_val) # Update HMAC key. Merely rubbish.
 

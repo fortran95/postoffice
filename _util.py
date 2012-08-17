@@ -64,6 +64,11 @@ def cache_set(key,value,life):
     c = shelve.open(PATH_cache,writeback=True)
     nowtime = time.time()
     c[key] = (value,nowtime + life)
+def cache_del(key):
+    global PATH_cache
+    c = shelve.open(PATH_cache,writeback=True)
+    if c.has_key(key):
+        c[key] = None
 ###################################################################################################
 def serious_confirm(prompt):
     chk = raw_input("\n--- 严重警告 ---\n%s\n\n如仍想继续，请抄写括号内的单词 [CONTINUE ANYWAY]:" % prompt)
