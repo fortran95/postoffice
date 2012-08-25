@@ -44,20 +44,22 @@ def friendly_display(h,centerw=79):
 
 def do():
     items = [
-        ('Root public certificates': [('xi/user/rootcerts',None)]),
-        ('Kernel Programs'         : [('xi/','.py'),('xi/ciphers','.py'),('xi/hashes','.py'),('','.py'),('gui/','.py')]),
+        ('Root public certificates', [('xi/user/rootcerts',None)]),
+        ('Kernel Programs'         , [('xi/','.py'),('xi/ciphers','.py'),('xi/hashes','.py'),('.','.py'),('gui/','.py')]),
     ]
     result = {}
+    print "Self-checking, this may take a few minutes."
     for itemname, listp in items:
         print "Calcuating checksums: %s" % itemname
         result[itemname] = sumfiles(ls(listp))
 
     print colorshell("Compare following checksums with your paper records.",1,0)
-    print "Mismatching tells that part's been modified. If you're not sure that's what you have done, be cautious using the entire system. If you are confident with system security, update your paper records."
+    print "Mismatching tells that part's been modified. If you're not sure that's what you have done, be cautious using the entire system."
+    print "If you are confident with system security, update your paper records."
     print ''
     i = 1
     for itemname in result:
-        print "[%d] %s:\n %s" % (i, itemname, friendly_display(result[itemname]))
+        print "[%d] %s:\n %s" % (i, itemname, colorshell(friendly_display(result[itemname]),32,1))
         i += 1
 
 if __name__ == '__main__':
