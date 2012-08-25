@@ -5,18 +5,20 @@ from xi.hashes import Hash
 from _util import colorshell
 
 BASEPATH = os.path.realpath(os.path.dirname(sys.argv[0]))
-def ls(path,suffix=None):
+def ls(parameters):
     global BASEPATH
-    lst = os.listdir(path)
-    r1,r2 = [],[]
-    if suffix != None:
-        for each in lst:
-            if each.endswith(suffix): r1.append(each)
-    else:
-        r1 = lst
-    r1.sort()
-    for each in r1:
-        r2.append(os.path.join(BASEPATH,path,each))
+    r2 = []
+    for path, suffix in parameters:
+        lst = os.listdir(path)
+        r1 = []
+        if suffix != None:
+            for each in lst:
+                if each.endswith(suffix): r1.append(each)
+        else:
+            r1 = lst
+        r1.sort()
+        for each in r1:
+            r2.append(os.path.join(BASEPATH,path,each))
     return r2
 
 def sumfiles(filelist):
@@ -41,13 +43,22 @@ def friendly_display(h,centerw=79):
     return ret.strip().center(centerw)
 
 def do():
-    root     = sumfiles(ls('xi/user/rootcerts'))
-    basefile = sumfiles(ls('xi/','.py'))
+    items = [
+        ('Root public certificates': [('xi/user/rootcerts',None)]),
+        ('Kernel Programs'         : [('xi/','.py'),('xi/ciphers','.py'),('xi/hashes','.py'),('','.py'),('gui/','.py')]),
+    ]
+    result = {}
+    for itemname, listp in items:
+        print "Calcuating checksums: %s" % itemname
+        result[itemname] = sumfiles(ls(listp))
 
     print colorshell("Compare following checksums with your paper records.",1,0)
     print "Mismatching tells that part's been modified. If you're not sure that's what you have done, be cautious using the entire system. If you are confident with system security, update your paper records."
     print ''
-    print "[1] Root public certificates:\n %s" % friendly_display(root)
+    i = 1
+    for itemname in result:
+        print "[%d] %s:\n %s" % (i, itemname, friendly_display(result[itemname]))
+        i += 1
 
 if __name__ == '__main__':
     do()
