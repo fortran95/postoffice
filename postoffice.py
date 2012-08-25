@@ -37,20 +37,28 @@ class postoffice_shell(Cmd):
         if line.lower().startswith('silent'):
             return tool_selfcheck.do(True)
         else:
-            return tool_selfcheck.do(False)
+            tool_selfcheck.do(False)
 
     def do_EOF(self,line) : os.system('clear'); self.do_selfcheck(''); exit()
     def do_exit(self,line): self.do_EOF(line)
     def do_quit(self,line): self.do_EOF(line)
 
-    def _show_usage(self,cmdfmt,desc): print '%s: %s\n\n%s' % (colorshell('Usage',1,4),cmdfmt,desc)
+    def _show_usage(self,cmdfmt,desc): print '%s: %s\n%s' % (colorshell('Usage',1,4),cmdfmt,desc)
     def _run_python(self,filename):
         global BASEPATH
         os.system('python ' + os.path.join(BASEPATH,filename))
     def help_issue(self)    : self._show_usage('issue certificate|signature','generate new certificate, or sign a known certificate.')
     def help_EOF(self)      : self._show_usage('exit|quit|<Ctrl+D>','Exit this shell.')
     def help_help(self)     : self._show_usage('help [CommandName]','Show help on specific command or full document.')
-    def help_selfcheck(self): self._show_usage('selfcheck','Calculate and list checksums of basic system configurations.')
+    def help_selfcheck(self):
+        self._show_usage('selfcheck',
+            '''
+Calculate and list checksums of basic system configurations.
+
+  Root certificates, system programs and system configure files are monitored with this command. Each file is hashed with SHA-1, the resulting checksums joined and hashed with SHA-224. A short and easy to remember CRC32+ADLER32 checksum of these results is also provided.
+  This command provides user with friendly parameters that cover entire system's status. System administrator should be familiar with the short CRC32+ADLER32 checksum of a well-configured system, while others recorded on the paper. So that if he found the short code being different one day, he could tell where in this system has been modified(thus making system potentially insecure) and fix that.
+            '''.strip()
+        )
 
     def help_exit(self): self.help_EOF()
     def help_quit(self): self.help_EOF()
