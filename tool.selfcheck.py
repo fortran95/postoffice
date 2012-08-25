@@ -30,11 +30,11 @@ def sumfiles(filelist):
 
     return Hash('sha224',''.join(hashpart)).hexdigest()
     
-def sumhashes(hashlist):
+def sumhashes(hashlist,algo='sha224'):
     hashlist.sort()
-    return Hash('sha224',''.join(hashlist)).hexdigest()
+    return Hash(algo,''.join(hashlist)).hexdigest()
 
-def friendly_display(h,centerw=79):
+def friendly_display(h,centerw=80):
     h = h.upper()
     ret = ''
     while h != '':
@@ -48,18 +48,23 @@ def do():
         ('Kernel Programs'         , [('xi/','.py'),('xi/ciphers','.py'),('xi/hashes','.py'),('.','.py'),('gui/','.py')]),
     ]
     result = {}
-    print "Self-checking, this may take a few minutes."
+    print colorshell("Self-checking, this may take a few minutes.",1,0)
     for itemname, listp in items:
-        print "Calcuating checksums: %s" % itemname
+        print "Calculating checksums: %s" % itemname
         result[itemname] = sumfiles(ls(listp))
 
+    total = sumhashes(result.values(),'md5')
+
     print colorshell("Compare following checksums with your paper records.",1,0)
-    print "Mismatching tells that part's been modified. If you're not sure that's what you have done, be cautious using the entire system."
-    print "If you are confident with system security, update your paper records."
-    print ''
+    print "A mismatch is a sign of modification to the relative part."
+    print "If you're not sure why mismatch, be cautious using the entire system."
+    print "If you're confident with system security and integrity, update paper records.\n"
+
+    print 'Total checksum (for quick examination):'
+    print colorshell(friendly_display(total),32,1)
     i = 1
     for itemname in result:
-        print "[%d] %s:\n %s" % (i, itemname, colorshell(friendly_display(result[itemname]),32,1))
+        print "[%d] %s:\n%s" % (i, itemname, colorshell(friendly_display(result[itemname]),32,1))
         i += 1
 
 if __name__ == '__main__':

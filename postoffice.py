@@ -12,6 +12,8 @@ class postoffice_shell(Cmd):
     prompt = 'Xi.Postoffice > '
 
     def cmdloop(self, intro=None):
+        os.system('clear')
+
         print '*' * 80
         print '*' + colorshell(' Welcome to Postoffice ',1,0).center(88,' ') + '*'
         print '* This is user interface to top-secret system Xi\'s frontend.' + 19 * ' ' + '*'
@@ -28,7 +30,7 @@ class postoffice_shell(Cmd):
         print line
     def do_selfcheck(self,line): self._run_python('tool.selfcheck.py')
 
-    def do_EOF(self,line) : exit()
+    def do_EOF(self,line) : os.system('clear'); self.do_selfcheck(''); exit()
     def do_exit(self,line): self.do_EOF(line)
     def do_quit(self,line): self.do_EOF(line)
 
