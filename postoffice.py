@@ -21,6 +21,7 @@ class postoffice_shell(Cmd):
         print colorshell(' Attention! ',31).center(91,'*')
         print '* %-56s *' % '%s checking system integrity with: %s' % (colorshell('ALWAYS remember',33,1),colorshell('selfcheck',1,0))
         print '*' * 80
+        self.do_selfcheck('')
         Cmd.cmdloop(self, intro)
 
     def do_issue(self,line):

@@ -21,6 +21,8 @@ logging.basicConfig(
 #logging.setLoggerClass(ColoredLogger)
 
 ###################################################################################################
+def colorshell(str,color,attr=1):
+    return "\x1B[%d;%dm%s\x1b[0m" % (attr,color,str)
 def uniqid():
     return str(uuid.uuid5(uuid.uuid4(),str(time.time())))
 def splitjsons(text):
