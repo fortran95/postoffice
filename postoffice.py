@@ -32,7 +32,11 @@ class postoffice_shell(Cmd):
         Cmd.cmdloop(self, intro)
 
     def do_issue(self,line):
-        print line
+        line = line.lower()
+        if   line.startswith('cert'):
+            self._run_python('tool_certnew.py')
+        elif line.startswith('sign'):
+            self._run_python('tool_signnew.py')
     def do_selfcheck(self,line):
         if line.lower().startswith('silent'):
             return tool_selfcheck.do(True)
@@ -47,7 +51,7 @@ class postoffice_shell(Cmd):
     def _run_python(self,filename):
         global BASEPATH
         os.system('python ' + os.path.join(BASEPATH,filename))
-    def help_issue(self)    : self._show_usage('issue certificate|signature','generate new certificate, or sign a known certificate.')
+    def help_issue(self)    : self._show_usage('issue cert|sign','generate new certificate, or sign a known certificate.')
     def help_EOF(self)      : self._show_usage('exit|quit|<Ctrl+D>','Exit this shell.')
     def help_help(self)     : self._show_usage('help [CommandName]','Show help on specific command or full document.')
     def help_selfcheck(self):
