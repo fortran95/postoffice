@@ -21,13 +21,18 @@ def ls(parameters):
             r2.append(os.path.join(BASEPATH,path,each))
     return r2
 
-def sumfiles(filelist):
+def sumfiles(filelist,include_list=True):
     global BASEPATH
     hashpart = []
 
     for each in filelist:
 #        hashpart.append(Hash('whirlpool',open(each,'r').read()).hexdigest())  #
-        hashpart.append(Hash('sha1',open(each,'r').read()).digest())
+        filec = open(each,'r').read()
+        hashinput = filec + ';' + str(len(filec))
+        hashpart.append(Hash('sha1',hashinput).digest())
+
+    if include_list:
+        hashpart.append(Hash('sha1',' '.join(filelist)).digest())
 
     return Hash('sha224',''.join(hashpart)).hexdigest()
     
@@ -56,7 +61,7 @@ def do(silent=True):
         result[itemname] = sumfiles(ls(listp))
 
     hashsum = sumhashes(result.values())
-    total = str(hex(zlib.crc32(hashsum) & 0xFFFFFFFF))[2:] + str(hex(zlib.adler32(hashsum) & 0xFFFFFFFF))[2:]
+    total = str(hex(zlib.crc32(hashsum) & 0xFFFFFFFF))[2:10] + str(hex(zlib.adler32(hashsum) & 0xFFFFFFFF))[2:10]
 
     if not silent:
         print colorshell("Compare following checksums with your paper records.",1,0)
