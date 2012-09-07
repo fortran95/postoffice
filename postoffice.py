@@ -23,6 +23,11 @@ class postoffice_shell(Cmd):
         print '*' + colorshell(' Welcome to Postoffice ',1,0).center(88,' ') + '*'
         print '* This is user interface to top-secret system Xi\'s frontend.' + 19 * ' ' + '*'
         print emptyline
+        print "* %-76s *" % "Xi-System  Copyright (C) 2012  NERV"
+        print "* %-76s *" % "This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'." # FIXME show w
+        print "* %-76s *" % "This is free software, and you are welcome to redistribute it"
+        print "* %-76s *" % "under certain conditions; type `show c' for details." # FIXME show c
+        print emptyline
         print '* %-74s *' % 'To get help: %s' % colorshell('help',1,0)
         print '* %-66s *' % 'To exit: %s or %s or %s' % (colorshell('exit',1,0),colorshell('quit',1,0),colorshell('<Ctrl+D>',1,0))
         print emptyline
