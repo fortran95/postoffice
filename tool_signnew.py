@@ -62,9 +62,10 @@ if jobid == 2: # 导入证书签名
 
         cid = c.get_id()
         if cid == certified:
+            holder_pubpath = c_path
             if u in privatelist:
                 holder = certificate()
-                holder_pubpath = c_path
+#                holder_pubpath = c_path
 
                 def _pinreader(b=False,p1='',p2=''):
                     msg = u'正在将签名导入私有证书。\n请您输入密码解密以下证书：\n [%s]\n\n如果取消，将试图将签名只导入到公钥证书。' % c.subject
