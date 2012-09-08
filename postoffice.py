@@ -5,11 +5,15 @@
 
 from cmd import *
 from _util import colorshell
-import os,sys,argparse
+import os
+import sys
+import argparse
+import getpass
 
 import tool_selfcheck
 
 BASEPATH = os.path.realpath(os.path.dirname(sys.argv[0]))
+isroot = getpass.getuser() == 'root'
 
 class postoffice_shell(Cmd):
     prompt = 'Xi.Postoffice > '
@@ -23,6 +27,8 @@ class postoffice_shell(Cmd):
         print '*' * 80
         print '*' + colorshell(' Welcome to Postoffice ',1,0).center(88,' ') + '*'
         print '* This is user interface to top-secret system Xi\'s frontend.' + 19 * ' ' + '*'
+        if not isroot:
+            print '* %-87s *' % colorshell("WARNING: You are not root. Some commands may not work.",31,1)
         print emptyline
         print "* %-76s *" % "Xi-System  Copyright (C) 2012  NERV"
         print "* %-76s *" % "This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'." # FIXME show w
