@@ -94,7 +94,7 @@ if jobid == 2: # 导入证书签名
         needCheck = True
 
         if issuer == None:
-            info.warning('THIS SIGNATURE CANNOT BE VERIFIED.')
+            log.warning('THIS SIGNATURE CANNOT BE VERIFIED.')
             print "\n警告！找不到用于验证此签名的证书！\n"
         else:
             print u"签发人[%s](ID:%s)，进行验证..." % (issuer.subject,issuer.get_id())
