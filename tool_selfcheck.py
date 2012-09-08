@@ -9,7 +9,7 @@ def ls(parameters):
     global BASEPATH
     r2 = []
     for path, suffix in parameters:
-        lst = os.listdir(path)
+        lst = os.listdir(os.path.join(BASEPATH,*path))
         r1 = []
         if suffix != None:
             for each in lst:
@@ -18,7 +18,7 @@ def ls(parameters):
             r1 = lst
         r1.sort()
         for each in r1:
-            r2.append(os.path.join(BASEPATH,path,each))
+            r2.append(os.path.join(os.path.join(BASEPATH,*path),each))
     return r2
 
 def sumfiles(filelist,include_list=True):
@@ -50,9 +50,9 @@ def friendly_display(h,centerw=80):
 
 def do(silent=True):
     items = [
-        ('Root public certificates', [('xi/user/rootcerts',None)]),
-        ('Config Files'            , [('config/','alias.cfg')]),
-        ('Kernel Programs'         , [('xi/','.py'),('xi/ciphers','.py'),('xi/hashes','.py'),('.','.py'),('gui/','.py')]),
+        ('Root public certificates', [(('xi','user','rootcerts'),None)]),
+        ('Config Files'            , [(('config',),'alias.cfg')]),
+        ('Kernel Programs'         , [(('xi',),'.py'),(('xi','ciphers'),'.py'),(('xi','hashes'),'.py'),(('',),'.py'),(('gui',),'.py')]),
     ]
     result = {}
     print "Self-checking, this may take a few minutes."
