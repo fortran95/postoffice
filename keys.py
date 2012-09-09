@@ -166,7 +166,7 @@ class keys(object):
 
         # Decrypt Save key.
         def _pinreader(hint):
-            msg = '对称密钥需要解锁。\n请输入如下私有证书的密码：\n [%s]' % hint
+            msg = u'对称密钥需要解锁。\n请输入如下私有证书的密码：\n [%s]' % hint
             return pinreader(False,message=msg)
         pin = _util.cache_get(keyid)
         if pin == None:
