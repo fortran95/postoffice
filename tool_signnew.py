@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 # 用于产生证书的签名和导入签名
+import logging,os,sys,ConfigParser,copy
+import bson as serializer
 
 import _util
 from xi.certificate import certificate
@@ -8,8 +10,6 @@ from gui.selector   import selector
 from gui.inputbox   import inputbox
 from gui.pinreader  import pinreader
 from gui.spinbox    import spinbox
-
-import logging,os,sys,ConfigParser,json,copy
 
 log = logging.getLogger('xi.tool.signnew')
 
@@ -43,9 +43,9 @@ else:
 
 
 if jobid == 2: # 导入证书签名
-    signtxt = inputbox('请将签名文本粘贴（Ctrl+V）到下面：','导入签名',True)
+    signtxt = inputbox('请将签名文本粘贴（Ctrl+V）到下面：','导入签名',True).decode('base64')
     try:
-        signparsed = json.loads(signtxt)
+        signparsed = serializer.loads(signtxt)
         certified  = signparsed['Content']['Certified_ID']
         issued     = signparsed['Content']['Issuer_ID']
     except:
@@ -186,7 +186,7 @@ else:
     signature = signer.sign_certificate(holder,trustlevel,signlife)
 
     savepath = os.path.join(_util.PATH_output,_util.uniqid() + '.sig')
-    open(savepath,'w+').write(signature)
+    open(savepath,'w+').write(signature.encode('base64'))
 
     print '您的签名已经写入到：\n %s' % savepath
     log.info('Signature saved to [%s].',savepath)
