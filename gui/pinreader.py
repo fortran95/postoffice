@@ -126,7 +126,7 @@ if guitype == 'tk':
         return ret[0]
 
 if guitype == 'wx':
-    class PinReader(wx.Frame)
+    class PinReader(wx.Frame):
         def __init__(self,parent,**argv):
             parent = None
             wx.Frame.__init__(self,
